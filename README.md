@@ -39,8 +39,8 @@ After running `webamp --init` you can view the configuration file at `~/.webamp/
 ``` json
 {
   "ampache": {
-    "debug": false, /* Optional - default: false */
-    "ping": 600000, /* Optional - default: 10 * 60 * 1000 */
+    "debug": false,
+    "ping": 600000,
     "user": "user",
     "pass": "pass",
     "url": "http://example.com:1234/ampache/server/xml.server.php"
@@ -56,8 +56,8 @@ After running `webamp --init` you can view the configuration file at `~/.webamp/
 
 Most of the options are self explanatory
 
-`ampache.debug`: Enable debug messages for [Ampache](https://github.com/bahamas10/node-ampache/) module
-`ampache.ping`: The time in milliseconds to between sending `ping` requests to Ampache (default: 10 minutes)
+- `ampache.debug`: (Optional) Enable debug messages for [Ampache](https://github.com/bahamas10/node-ampache/) module
+- `ampache.ping`: (Optional) The time in milliseconds to between sending `ping` requests to Ampache (default: 10 minutes)
 
 API
 ---
