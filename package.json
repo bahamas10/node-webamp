@@ -1,0 +1,27 @@
+{
+  "name": "webamp",
+  "description": "Ampache web interface",
+  "version": "0.0.0",
+  "author": "Dave Eddy <dave@daveeddy.com> (http://www.daveeddy.com)",
+  "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bahamas10/node-webamp.git"
+  },
+  "scripts": {
+    "test": "for f in tests/*.js; do echo \"$f\"; node \"tests/$f\" || exit 1; done; echo 'Passed!'; exit 0"
+  },
+  "dependencies": {
+    "ampache": "~ 0.1.1",
+    "routes": "~ 0.1.0"
+  },
+  "bin": {
+    "webamp": "./bin/webamp.js"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  },
+  "keywords": [ "ampache", "owncloud", "viridian" ]
+}
