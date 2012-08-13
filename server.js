@@ -12,13 +12,7 @@ var http = require('http'),
       'url': 'static/'
     }),
     conn,
-    cache = {
-      'artists': null,
-      'albums': null,
-      'songs': null,
-      'songs_by_album': null,
-      'albums_by_artist': null
-    };
+    cache = {};
 
 // make the routes
 router.addRoute('/', index);
@@ -161,8 +155,5 @@ function cache_x_by_y(x, y) {
 
 // Check if the cache is ready
 function cache_ready() {
-  for (var key in cache) {
-    if (!cache[key]) return false;
-  }
-  return true;
+  return Object.keys(cache).length >= 5;
 }
