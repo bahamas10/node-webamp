@@ -5,7 +5,7 @@ var http = require('http'),
     url = require('url'),
     conf = {},
     conn,
-    cache = {'artists': null, 'albums': null, 'songs': null},
+    cache = {'artists': null, 'albums': null, 'songs': null, 'songs_by_album': null, 'albums_by_artist': null},
     router = new require('routes').Router();
 
 // make the routes
@@ -108,19 +108,48 @@ function api(req, res, params) {
 // Populate the caches with data
 function populate_cache() {
   console.log('Populating cache');
+  var albums_by_artist = 0,
+      songs_by_album = 0;
   conn.get_artists(function(err, body) {
     if (err) throw err;
     cache.artists = body;
     console.log('Artists cache loaded');
+    if (++albums_by_artist >= 2) cache_albums_by_artist();
   });
   conn.get_albums(function(err, body) {
     if (err) throw err;
     cache.albums = body;
     console.log('Albums cache loaded');
+    if (++albums_by_artist >= 2) cache_albums_by_artist();
+    if (++songs_by_album >= 2) cache_songs_by_album();
   });
   conn.get_songs(function(err, body) {
     if (err) throw err;
     cache.songs = body;
     console.log('Songs cache loaded');
+    if (++songs_by_album >= 2) cache_songs_by_album();
   });
+}
+
+// Clean these next 2 functions up.. so much copy and paste
+function cache_albums_by_artist() {
+  console.log('Calculating albums by artists');
+  cache.albums_by_artist = {};
+  Object.keys(cache.albums).forEach(function(id) {
+    var artist_id = cache.albums[id].artist['@'].id;
+    cache.albums_by_artist[artist_id] = cache.albums_by_artist[artist_id] || [];
+    cache.albums_by_artist[artist_id].push(id);
+  });
+  console.log('Finished albums by artists');
+}
+
+function cache_songs_by_album() {
+  console.log('Calculating songs by albums');
+  cache.songs_by_album = {};
+  Object.keys(cache.songs).forEach(function(id) {
+    var album_id = cache.songs[id].album['@'].id;
+    cache.songs_by_album[album_id] = cache.songs_by_album[album_id] || [];
+    cache.songs_by_album[album_id].push(id);
+  });
+  console.log('Finished albums by artists');
 }
