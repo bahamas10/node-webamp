@@ -26,7 +26,12 @@ module.exports = function(config) {
 
   // Authenticate Ampache
   conn.authenticate(function(err, body) {
-    if (err) throw err;
+    if (err) {
+      console.error('Failed to authenticate!');
+      console.error('Username: %s', conf.ampache.user);
+      console.error('URL: %s', conf.ampache.url);
+      throw err;
+    }
     console.log('Successfully Authenticated!');
 
     // Populate the cache
@@ -146,9 +151,9 @@ function cache_x_by_y(x, y) {
   var key = (x === 'albums') ? 'albums_by_artist' : 'songs_by_album';
   cache[key] = {};
   Object.keys(cache[x]).forEach(function(id) {
-    var _id = cache[x][id][y]['@'].id;
+    var _id = +cache[x][id][y]['@'].id;
     cache[key][_id] = cache[key][_id] || [];
-    cache[key][_id].push(id);
+    cache[key][_id].push(+id);
   });
   console.log('Finished %s by %s', x, y);
 }
