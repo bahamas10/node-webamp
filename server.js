@@ -1,11 +1,16 @@
 // Includes and constants
 var http = require('http'),
+    fs = require('fs'),
     path = require('path'),
     AmpacheSession = require('ampache'),
     url = require('url'),
-    render = require('./render'),
     router = new require('routes').Router(),
+    index_html = fs.readFileSync(path.join(__dirname, 'site', 'index.html')),
     conf = {},
+    mount = require('st')({
+      'path': path.join('site', 'static'),
+      'url': 'static/'
+    }),
     conn,
     cache = {
       'artists': null,
@@ -56,8 +61,11 @@ function server_started() {
 // Request received
 function on_request(req, res) {
   // Log it
-  console.log('[%s] [%s] request received from %s for %s ',
+  console.log('[%s] [%s] request received from %s for %s',
       Date(), req.method, req.connection.remoteAddress, req.url);
+
+  // static hit
+  if (mount(req, res)) return;
 
   // Extract the URL
   var uri = url.parse(req.url),
@@ -77,7 +85,7 @@ function on_request(req, res) {
 // Index route hit
 function index(req, res, params) {
   if (!cache_ready()) return res.end('Cache\'s not ready');
-  render(res, {'page_index': true, 'is_logged_in': true, 'email': 'something'});
+  res.end(index_html);
 }
 
 // API Route hit
