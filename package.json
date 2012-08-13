@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "ampache": "~ 0.1.1",
+    "amulet": "~ 0.2.4",
     "routes": "~ 0.1.0"
   },
   "bin": {

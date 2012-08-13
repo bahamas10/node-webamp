@@ -1,0 +1,30 @@
+<h1>{{title}}</h1>
+{{#error}}<div class="alert">{{error}}</div>{{/error}}
+{{#message}}<div class="message">{{message}}</div>{{/message}}
+
+{{#page_index}}
+{{#is_logged_in}}
+<p>Welcome {{email}}!</p>
+<a href="/logout">Logout</a>
+{{/is_logged_in}}
+{{^is_logged_in}}
+<a href="/signup">Sign Up</a>
+<a href="/login">Login</a>
+{{/is_logged_in}}
+{{/page_index}}
+
+{{#page_signup}}
+<form method="post" action="/signup">
+Email: <input name="email" type="text" />
+Password: <input name="password1" type="password" />
+Verify Password: <input name="password2" type="password" />
+<input type="submit" name="Signup" />
+</form>
+{{/page_signup}}
+
+{{#page_login}}
+<form method="post" action="/login">
+Email: <input name="email" type="text" />
+Password: <input name="password" type="password" />
+<input type="submit" name="Login" />
+{{/page_login}}
