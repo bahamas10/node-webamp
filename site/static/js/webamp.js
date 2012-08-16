@@ -68,4 +68,22 @@ function start() {
     $audio[0].pause();
     $audio[0].play();
   });
+
+  // Keyboard shortcuts
+  console.log(Mousetrap);
+  Mousetrap.bind('space', function() {
+    var audio = $audio[0];
+    if (audio.paused) audio.play();
+    else audio.pause();
+    console.log('Music is now ' + ((audio.paused) ? 'paused' : 'playing'));
+    return false;
+  });
+  Mousetrap.bind(['j', 'down'], function() {
+    console.log('down');
+    return false;
+  });
+  Mousetrap.bind(['k', 'up'], function() {
+    console.log('up');
+    return false;
+  });
 }
