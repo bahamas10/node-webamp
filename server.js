@@ -10,6 +10,21 @@ var http = require('http'),
       path.join(__dirname, 'site', 'index.html')
     ),
     mount = require('st')({
+/*      'cache': {
+        'content': {
+          'maxAge': 1,
+          'max': 1
+        },
+        'fd': {
+          'max': 1,
+          'maxAge': 1,
+        },
+        'stat': {
+          'max': 1,
+          'maxAge': 1,
+        }
+      },
+*/
       'path': path.join('site', 'static'),
       'url': 'static/'
     }),

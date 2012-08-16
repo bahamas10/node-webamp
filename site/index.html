@@ -3,6 +3,7 @@
 	<head>
 		<title>WebAmp :: For the non-blocking love of music</title>
 		<link rel="stylesheet" href="/static/third-party/bootstrap/css/bootstrap.min.css"></link>
+		<link rel="stylesheet" href="/static/third-party/bootstrap/css/bootstrap-responsive.min.css"></link>
 		<link rel="stylesheet" href="/static/css/style.css"></link>
 		<script src="/static/third-party/jquery/jquery-1.7.2.min.js"></script>
 		<script src="/static/js/webamp.js"></script>
@@ -14,15 +15,21 @@
 					<h1><a href="/">WebAmp</a></h1>
 					<span class="caption">Ampache for the web</span>
 				</div>
+				<a href="https://github.com/bahamas10/node-webamp/">Fork on GitHub</a>
 			</header>
 
 			<div id="main" class="clearfix">
-				Something goes here i guess
+				<div id="data" class="row-fluid">Loading...</div>
 			</div><!-- #main -->
 
-			<footer id="footer">
-				<a href="https://github.com/bahamas10/node-webamp/">Fork on GitHub</a>
-			</footer>
 		</div><!-- .container -->
+		<footer id="footer" class="row-fluid">
+			<ul id="nowplaying" class="span4">
+				<li class="artist"></li>
+				<li class="album"></li>
+				<li class="song"></li>
+			</ul>
+			<audio controls preload="auto" autobuffer class="span8"></audio>
+		</footer>
 	</body>
 </html>
