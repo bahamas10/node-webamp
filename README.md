@@ -47,14 +47,14 @@ After running `webamp --init` you can view the configuration file at `~/.webamp/
   },
   "web": {
     "host": "localhost",
-    "port": "8076"
+    "port": 8076
   }
 }
 ```
 
 ### Options
 
-Most of the options are self explanatory
+Most of the options are self explanatory, but for those that aren't
 
 - `ampache.debug`: (Optional) Enable debug messages for [Ampache](https://github.com/bahamas10/node-ampache/) module
 - `ampache.ping`: (Optional) The time in milliseconds to between sending `ping` requests to Ampache (default: 10 minutes)
