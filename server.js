@@ -2,16 +2,21 @@
 var http = require('http'),
     fs = require('fs'),
     path = require('path'),
-    AmpacheSession = require('ampache'),
+    open = require('open'),
     url = require('url'),
+    util = require('util'),
     router = new require('routes').Router(),
-    index_html = fs.readFileSync(path.join(__dirname, 'site', 'index.html')),
-    conf = {},
+    index_html = fs.readFileSync(
+      path.join(__dirname, 'site', 'index.html')
+    ),
     mount = require('st')({
       'path': path.join('site', 'static'),
       'url': 'static/'
     }),
+    AmpacheSession = require('ampache'),
     conn,
+    conf,
+    cache_ready = false;
     cache = {};
 
 // make the routes
@@ -21,8 +26,10 @@ router.addRoute('/api/:type?/:filter?/:new?', api);
 // Export the function to create the server
 module.exports = function(config) {
   conf = config;
+
   // Create the Ampache Object
-  conn = new AmpacheSession(conf.ampache.user, conf.ampache.pass, conf.ampache.url, {debug: conf.ampache.debug || false});
+  conn = new AmpacheSession(conf.ampache.user, conf.ampache.pass,
+      conf.ampache.url, {debug: conf.ampache.debug || false});
 
   // Authenticate Ampache
   conn.authenticate(function(err, body) {
@@ -34,7 +41,6 @@ module.exports = function(config) {
     }
     console.log('Successfully Authenticated!');
 
-    // Populate the cache
     populate_cache();
 
     // Keep-Alive
@@ -49,13 +55,11 @@ module.exports = function(config) {
   });
 
   // Create the server
-  return http.createServer(on_request).listen(conf.web.port, conf.web.host, server_started);
+  return http.createServer(on_request).listen(conf.web.port, conf.web.host, function() {
+    console.log('Server running at http://%s:%d/', conf.web.host, conf.web.port);
+  });
 };
 
-// Http server started
-function server_started() {
-  console.log('Server running at http://%s:%d/', conf.web.host, conf.web.port);
-}
 
 // Request received
 function on_request(req, res) {
@@ -83,7 +87,7 @@ function on_request(req, res) {
 
 // Index route hit
 function index(req, res, params) {
-  if (!cache_ready()) return res.end('Cache\'s not ready');
+  if (!cache_ready) return res.end('Cache\'s not ready');
   res.end(index_html);
 }
 
@@ -142,6 +146,8 @@ function populate_cache() {
            && ++albums_by_artist >= 2) cache_x_by_y('albums', 'artist');
       if ((key === 'albums' || key === 'songs')
            && ++songs_by_album >= 2) cache_x_by_y('songs', 'album');
+      if (songs_by_album >= 2 && albums_by_artist >=2)
+        caches_ready();
     });
   });
 }
@@ -158,7 +164,8 @@ function cache_x_by_y(x, y) {
   console.log('Finished %s by %s', x, y);
 }
 
-// Check if the cache is ready
-function cache_ready() {
-  return Object.keys(cache).length >= 5;
+function caches_ready() {
+  cache_ready = true;
+  console.log('All caches ready');
+  open(util.format('http://%s:%d/', conf.web.host, conf.web.port));
 }

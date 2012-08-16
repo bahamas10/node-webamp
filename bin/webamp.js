@@ -26,7 +26,7 @@ var fs = require('fs'),
       },
       'web': {
         'host': 'localhost',
-        'port': '8076'
+        'port': 8076
       }
     };
 
@@ -73,10 +73,8 @@ switch (args[0]) {
     break;
 }
 
-// Try to get the config file
-var conf = {};
 try {
-  conf = require(config_file);
+  var conf = require(config_file);
 } catch (e) {
   console.error('Error reading %s: invoke with --init to create this file with defaults',
       config_file);
