@@ -21,6 +21,7 @@ Create the necessary config file by running
 
 This will create a json file at `~/.webamp/config.json` that will be used
 to configure the local webserver settings, as well as store the ampache credentials.
+Modify this file to reflect your setup, and then run `webamp` to start the service.
 
     ~$ webamp
     Server running at http://localhost:8076/
@@ -79,6 +80,10 @@ Return an object for the relevant song/album/artist by id in the cache
 #### /api/artists/:id/new, /api/artists/:id/new, /api/artists/:id/new
 
 Same as above, but force the info to come from Ampache and not the cache
+
+#### /api/albums\_by\_artist, /api/songs\_by\_album
+
+Return an object with an album or artist as the key, and a list of song or album ids (respectively)
 
 
 License

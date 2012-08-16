@@ -15,8 +15,8 @@ var fs = require('fs'),
     server = require('../server'),
     version = require('../package.json').version,
     args = process.argv.slice(2),
-    fs_path = path.join(process.env['HOME'], '.webamp'),
-    config_file = path.join(fs_path, 'config.json'),
+    webamp_dir = path.join(process.env['HOME'], '.webamp'),
+    config_file = path.join(webamp_dir, 'config.json'),
     default_config = {
       'ampache': {
         'user': 'user',
@@ -64,9 +64,9 @@ switch (args[0]) {
     console.log('Writing config to %s', config_file);
     console.log('Make sure to edit this file with your information');
     console.log(conf_stringified);
-    // Make the fs_path, and make it atomically
+    // Make the webamp_dir, and make it atomically
     try {
-      fs.mkdirSync(fs_path, '0700');
+      fs.mkdirSync(webamp_dir, '0700');
     } catch (e) {} // silence is golden
     fs.writeFileSync(config_file, conf_stringified);
     process.exit(0);
@@ -75,11 +75,16 @@ switch (args[0]) {
 
 try {
   var conf = require(config_file);
+  conf.webamp_dir = webamp_dir;
 } catch (e) {
   console.error('Error reading %s: invoke with --init to create this file with defaults',
       config_file);
   process.exit(1);
 }
+
+try {
+  fs.mkdirSync(path.join(webamp_dir, 'cache'), '0755');
+} catch (e) {}
 
 // Everything should be good now, let's start the server
 server(conf);

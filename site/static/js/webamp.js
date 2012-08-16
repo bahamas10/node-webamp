@@ -58,19 +58,32 @@ function start() {
         album = cache.songs[song_id].album['#'],
         song = cache.songs[song_id].title;
 
-    console.log('Clicked: ' + song_id);
-    $audio.attr('src', cache.songs[song_id].url);
+    console.log('Clicked: ' + song);
 
-    $nowplaying.artist.text(artist);
-    $nowplaying.album.text(album);
-    $nowplaying.song.text(song);
+    // Get the newest song url
+    $.ajax({
+      'url': '/api/songs/' + song_id + '/new',
+      'dataType': 'json',
+      'success': cb,
+      'error': cb
+    });
 
-    $audio[0].pause();
-    $audio[0].play();
+    function cb(data) {
+      console.log(data);
+      $audio.attr('src', data.url || cache.songs[song_id].url);
+
+      console.log(data.url || cache.songs[song_id].url);
+
+      $nowplaying.artist.text(artist);
+      $nowplaying.album.text(album);
+      $nowplaying.song.text(song);
+
+      $audio[0].pause();
+      $audio[0].play();
+    }
   });
 
   // Keyboard shortcuts
-  console.log(Mousetrap);
   Mousetrap.bind('space', function() {
     var audio = $audio[0];
     if (audio.paused) audio.play();

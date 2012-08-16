@@ -10,6 +10,7 @@ var http = require('http'),
       path.join(__dirname, 'site', 'index.html')
     ),
     mount = require('st')({
+      /*
       'cache': {
         'content': {
           'maxAge': 1,
@@ -24,14 +25,15 @@ var http = require('http'),
           'maxAge': 1,
         }
       },
-
+*/
       'path': path.join('site', 'static'),
       'url': 'static/'
     }),
     AmpacheSession = require('ampache'),
     conn,
     conf,
-    cache_ready = false;
+    cache_ready = false,
+    cache_dir = 'cache',
     cache = {};
 
 // make the routes
@@ -41,12 +43,13 @@ router.addRoute('/api/:type?/:filter?/:new?', api);
 // Export the function to create the server
 module.exports = function(config) {
   conf = config;
+  cache_dir = path.join(conf.webamp_dir, cache_dir);
 
   // Create the Ampache Object
   conn = new AmpacheSession(conf.ampache.user, conf.ampache.pass,
       conf.ampache.url, {debug: conf.ampache.debug || false});
 
-  // Authenticate Ampache
+  // Authenticate to Ampache
   conn.authenticate(function(err, body) {
     if (err) {
       console.error('Failed to authenticate!');
@@ -56,7 +59,12 @@ module.exports = function(config) {
     }
     console.log('Successfully Authenticated!');
 
-    populate_cache();
+    populate_cache(body);
+
+    // Save the auth data for the update/add/clean times
+    fs.writeFile(path.join(cache_dir, 'update.json'), JSON.stringify(body), function(err) {
+      if (err) return console.error(err);
+    });
 
     // Keep-Alive
     setInterval(function() {
@@ -140,31 +148,55 @@ function api(req, res, params) {
 }
 
 // Populate the caches with data
-function populate_cache() {
+function populate_cache(body) {
   console.log('Populating cache');
-  var to_get = {
+  var funcs = {
         'artists': AmpacheSession.prototype.get_artists,
         'albums': AmpacheSession.prototype.get_albums,
         'songs': AmpacheSession.prototype.get_songs
       },
+      to_get = {},
       albums_by_artist = 0,
       songs_by_album = 0;
 
-  // Loop the caches to build
+  if (cache_up_to_date(body)) {
+    ['artists', 'albums', 'songs'].forEach(function(key) {
+      try {
+        cache[key] = require(path.join(cache_dir, key + '.json'));
+        console.log('Loaded %s from local cache', key);
+        try_to_process(key);
+      } catch (e) {
+        console.error('Failed to load %s from local cache', key);
+        to_get[key] = funcs[key];
+      }
+    });
+  } else {
+    to_get = funcs;
+  }
+
+  // Loop the caches to build from remote source
   Object.keys(to_get).forEach(function(key) {
     to_get[key].call(conn, function(err, body) {
       if (err) throw err;
       cache[key] = body;
-      console.log('%s cache loaded', key);
+      // Save the cache
+      fs.writeFile(path.join(cache_dir, key + '.json'), JSON.stringify(body), function(err) {
+        if (err) return console.error(err);
+      });
+      console.log('Loaded %s from remote source', key);
 
-      if ((key === 'artists' || key === 'albums')
-           && ++albums_by_artist >= 2) cache_x_by_y('albums', 'artist');
-      if ((key === 'albums' || key === 'songs')
-           && ++songs_by_album >= 2) cache_x_by_y('songs', 'album');
-      if (songs_by_album >= 2 && albums_by_artist >=2)
-        caches_ready();
+      try_to_process(key);
     });
   });
+
+  function try_to_process(key) {
+    if ((key === 'artists' || key === 'albums')
+         && ++albums_by_artist >= 2) cache_x_by_y('albums', 'artist');
+    if ((key === 'albums' || key === 'songs')
+         && ++songs_by_album >= 2) cache_x_by_y('songs', 'album');
+    if (songs_by_album >= 2 && albums_by_artist >=2)
+      caches_ready();
+  }
 }
 
 function cache_x_by_y(x, y) {
@@ -183,4 +215,20 @@ function caches_ready() {
   cache_ready = true;
   console.log('All caches ready');
   open(util.format('http://%s:%d/', conf.web.host, conf.web.port));
+}
+
+function cache_up_to_date(body) {
+  var ok = true;
+
+  try {
+    var old_body = require(path.join(cache_dir, 'update.json'));
+  } catch (e) {
+    return false;
+  }
+
+  ['add', 'update', 'clean'].forEach(function(key) {
+    if (body[key].toJSON() !== old_body[key]) ok = false;
+  });
+
+  return ok;
 }
