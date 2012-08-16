@@ -227,7 +227,10 @@ function cache_up_to_date(body) {
   }
 
   ['add', 'update', 'clean'].forEach(function(key) {
-    if (body[key].toJSON() !== old_body[key]) ok = false;
+    if (body[key].toJSON() !== old_body[key]) {
+      console.warn('Cache not up-to-date - pulling from remote source');
+      ok = false;
+    }
   });
 
   return ok;
