@@ -5,6 +5,8 @@ Ampache web interface to make browsing, and playing your music a simple task
 
 **NOTE:** This is still a work-in-progress!!
 
+Only tested on Chrome, uses HTML5 Audio, probably won't work on any other browser
+
 Installation
 ------------
 
