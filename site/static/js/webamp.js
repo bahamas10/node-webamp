@@ -8,6 +8,9 @@ var cache = {
     current_artist = null,
     playlist = [],
     playlist_pos = 0,
+    options = {
+      'repeat': false,
+    },
     $data, $audio, $divs, $nowplaying;
 
 $(document).ready(function() {
@@ -150,6 +153,7 @@ function start() {
   $audio.on('ended', function() {
     console.log('song ended');
     playlist_pos++;
+    if (options.repeat) playlist_pos = playlist_pos % playlist.length;
     var song_id = playlist[playlist_pos];
     if (!song_id) return;
     $divs.songs.find('ul li[data-id=' + song_id + ']').trigger('click');
