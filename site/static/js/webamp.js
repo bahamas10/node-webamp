@@ -143,7 +143,7 @@ function start() {
       var img_src = data.art || cache.songs[song_id].art;
       if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
 
-      $nowplaying.img.attr('src', img_src);
+      $nowplaying.img.attr('src', img_src).removeClass('noborder');
 
       $audio[0].pause();
       $audio[0].play();
@@ -154,8 +154,16 @@ function start() {
     console.log('song ended');
     playlist_pos++;
     if (options.repeat) playlist_pos = playlist_pos % playlist.length;
+
     var song_id = playlist[playlist_pos];
-    if (!song_id) return;
+    if (!song_id) {
+      $nowplaying.song.text('');
+      $nowplaying.album.text('');
+      $nowplaying.artist.text('');
+      $nowplaying.img.attr('src', '/static/img/black.png').addClass('noborder');
+      return;
+    }
+
     $divs.songs.find('ul li[data-id=' + song_id + ']').trigger('click');
   });
 

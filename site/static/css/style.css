@@ -16,8 +16,16 @@
 	position: relative;
 	border: 1px solid white;
 	float: left;
+	margin-top: 2px;
+	margin-left: 2px;
+	margin-right: 5px;
 }
 #footer #nowplaying ul {
+	list-style: none;
 }
 audio {
+}
+
+.noborder {
+	border: none !important;
 }
