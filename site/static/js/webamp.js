@@ -52,12 +52,10 @@ function start() {
        : (key === 'albums')
        ? '<li data-id="all">All Albums</li>'
        : '';
-    Object.keys(cache[key]).forEach(function(id) {
-      var a = cache[key][id];
-      s += '<li data-id="' + id + '">' + (a.name || a.title) + '</li>';
-    });
     s += '</ul>';
     $divs[key].append(s);
+
+    populate_list($divs[key], key, Object.keys(cache[key]));
   });
 
 
@@ -149,6 +147,14 @@ function start() {
     }
   });
 
+  $audio.on('ended', function() {
+    console.log('song ended');
+    playlist_pos++;
+    var song_id = playlist[playlist_pos];
+    if (!song_id) return;
+    $divs.songs.find('ul li[data-id=' + song_id + ']').trigger('click');
+  });
+
   // Keyboard shortcuts
   Mousetrap.bind('space', function() {
     var audio = $audio[0];
@@ -170,8 +176,9 @@ function start() {
 function populate_list($item, target, ids) {
   var s = '';
   ids.forEach(function(id) {
-    var a = cache[target][id];
-    s += '<li data-id="' + id + '">' + (a.name || a.title) + '</li>';
+    var a = cache[target][id],
+        title = (a.name || a.title) + ((a.year) ? ' (' + a.year + ')' : '');
+    s += '<li data-id="' + id + '">' + title + '</li>';
   });
   $divs[target].find('ul').append(s);
 }
