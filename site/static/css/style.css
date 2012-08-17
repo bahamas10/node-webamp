@@ -12,5 +12,12 @@
 }
 #footer #nowplaying {
 }
+#footer #nowplaying img.album-art {
+	position: relative;
+	border: 1px solid white;
+	float: left;
+}
+#footer #nowplaying ul {
+}
 audio {
 }

@@ -6,6 +6,8 @@ var cache = {
       'albums_by_artist': null
     },
     current_artist = null,
+    playlist = [],
+    playlist_pos = 0,
     $data, $audio, $divs, $nowplaying;
 
 $(document).ready(function() {
@@ -29,9 +31,10 @@ function start() {
     'songs': null
   };
   $nowplaying = {
-    'artist': $('#nowplaying .artist'),
-    'album': $('#nowplaying .album'),
-    'song': $('#nowplaying .song')
+    'img': $('#nowplaying img.album-art'),
+    'artist': $('#nowplaying li.artist'),
+    'album': $('#nowplaying li.album'),
+    'song': $('#nowplaying li.song')
   };
 
   $data.html('');
@@ -58,6 +61,7 @@ function start() {
   });
 
 
+  // Artist click
   $('#artists ul li').live('click', function() {
     var $this = $(this),
         id = $this.attr('data-id'),
@@ -67,7 +71,7 @@ function start() {
 
     current_artist = +id || null;
 
-    // Populate the albusm
+    // Populate the albums
     $divs.albums.find('ul').html('<li data-id="all">All Albums</li>');
     populate_list($divs.albums, 'albums', ids);
 
@@ -78,6 +82,7 @@ function start() {
     });
   });
 
+  // Album click
   $('#albums ul li').live('click', function() {
     var $this = $(this),
         id = $this.attr('data-id'),
@@ -88,10 +93,12 @@ function start() {
     if (ids) {
       populate_list($divs.songs, 'songs', ids);
     } else if (current_artist) {
+      // All albums by the artist
       cache.albums_by_artist[current_artist].forEach(function(album_id) {
         populate_list($divs.songs, 'songs', cache.songs_by_album[album_id]);
       });
     } else {
+      // all the songs
       populate_list($divs.songs, 'songs', Object.keys(cache.songs));
     }
   });
@@ -105,6 +112,13 @@ function start() {
         song = cache.songs[song_id].title;
 
     console.log('Clicked: ' + song);
+
+    playlist = [];
+    $divs.songs.find('ul li').each(function() {
+      playlist.push($(this).attr('data-id'));
+    });
+    playlist_pos = playlist.indexOf(song_id);
+    console.log('Playlist pos ' + playlist_pos + ': ' + playlist);
 
     // Get the newest song url
     $.ajax({
@@ -123,6 +137,12 @@ function start() {
       $nowplaying.artist.text(artist);
       $nowplaying.album.text(album);
       $nowplaying.song.text(song);
+
+      // WTF API
+      var img_src = data.art || cache.songs[song_id].art;
+      if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
+
+      $nowplaying.img.attr('src', img_src);
 
       $audio[0].pause();
       $audio[0].play();
