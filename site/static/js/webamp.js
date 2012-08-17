@@ -1,10 +1,12 @@
 var cache = {
-  'artists': null,
-  'albums': null,
-  'songs': null,
-  'songs_by_album': null,
-  'albums_by_artist': null
-};
+      'artists': null,
+      'albums': null,
+      'songs': null,
+      'songs_by_album': null,
+      'albums_by_artist': null
+    },
+    current_artist = null,
+    $data, $audio, $divs, $nowplaying;
 
 $(document).ready(function() {
   var i = 0;
@@ -19,18 +21,18 @@ $(document).ready(function() {
 });
 
 function start() {
-  var $data = $('#data'),
-      $audio = $('audio'),
-      $divs = {
-        'artists': null,
-        'albums': null,
-        'songs': null
-      },
-      $nowplaying = {
-        'artist': $('#nowplaying .artist'),
-        'album': $('#nowplaying .album'),
-        'song': $('#nowplaying .song')
-      };
+  $data = $('#data');
+  $audio = $('audio');
+  $divs = {
+    'artists': null,
+    'albums': null,
+    'songs': null
+  };
+  $nowplaying = {
+    'artist': $('#nowplaying .artist'),
+    'album': $('#nowplaying .album'),
+    'song': $('#nowplaying .song')
+  };
 
   $data.html('');
 
@@ -42,6 +44,11 @@ function start() {
     // Populate the column
     var s = '';
     s += '<ul>';
+    s += (key === 'artists')
+       ? '<li data-id="all">All Artists</li>'
+       : (key === 'albums')
+       ? '<li data-id="all">All Albums</li>'
+       : '';
     Object.keys(cache[key]).forEach(function(id) {
       var a = cache[key][id];
       s += '<li data-id="' + id + '">' + (a.name || a.title) + '</li>';
@@ -50,8 +57,47 @@ function start() {
     $divs[key].append(s);
   });
 
+
+  $('#artists ul li').live('click', function() {
+    var $this = $(this),
+        id = $this.attr('data-id'),
+        ids = (id === 'all')
+            ? Object.keys(cache.albums)
+            : cache.albums_by_artist[id];
+
+    current_artist = +id || null;
+
+    // Populate the albusm
+    $divs.albums.find('ul').html('<li data-id="all">All Albums</li>');
+    populate_list($divs.albums, 'albums', ids);
+
+    // Populate the songs
+    $divs.songs.find('ul').html('');
+    ids.forEach(function(album_id) {
+      populate_list($divs.songs, 'songs', cache.songs_by_album[album_id]);
+    });
+  });
+
+  $('#albums ul li').live('click', function() {
+    var $this = $(this),
+        id = $this.attr('data-id'),
+        ids = cache.songs_by_album[id];
+
+    // Populate the songs
+    $divs.songs.find('ul').html('');
+    if (ids) {
+      populate_list($divs.songs, 'songs', ids);
+    } else if (current_artist) {
+      cache.albums_by_artist[current_artist].forEach(function(album_id) {
+        populate_list($divs.songs, 'songs', cache.songs_by_album[album_id]);
+      });
+    } else {
+      populate_list($divs.songs, 'songs', Object.keys(cache.songs));
+    }
+  });
+
   // Event listeners on songs
-  $('#songs ul li').click(function() {
+  $('#songs ul li').live('click', function() {
     var $this = $(this),
         song_id = $this.attr('data-id'),
         artist = cache.songs[song_id].artist['#'],
@@ -99,4 +145,13 @@ function start() {
     console.log('up');
     return false;
   });
+}
+
+function populate_list($item, target, ids) {
+  var s = '';
+  ids.forEach(function(id) {
+    var a = cache[target][id];
+    s += '<li data-id="' + id + '">' + (a.name || a.title) + '</li>';
+  });
+  $divs[target].find('ul').append(s);
 }
