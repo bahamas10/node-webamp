@@ -152,29 +152,10 @@ function start() {
 
   $audio.on('ended', function() {
     console.log('song ended');
-    playlist_pos++;
-    if (options.repeat) playlist_pos = playlist_pos % playlist.length;
-
-    var song_id = playlist[playlist_pos];
-    if (!song_id) {
-      $nowplaying.song.text('');
-      $nowplaying.album.text('');
-      $nowplaying.artist.text('');
-      $nowplaying.img.attr('src', '/static/img/black.png').addClass('noborder');
-      return;
-    }
-
-    $divs.songs.find('ul li[data-id=' + song_id + ']').trigger('click');
+    next();
   });
 
   // Keyboard shortcuts
-  Mousetrap.bind('space', function() {
-    var audio = $audio[0];
-    if (audio.paused) audio.play();
-    else audio.pause();
-    console.log('Music is now ' + ((audio.paused) ? 'paused' : 'playing'));
-    return false;
-  });
   Mousetrap.bind(['j', 'down'], function() {
     console.log('down');
     return false;
@@ -183,6 +164,9 @@ function start() {
     console.log('up');
     return false;
   });
+  Mousetrap.bind('space', toggle_play);
+  Mousetrap.bind('left', prev);
+  Mousetrap.bind('right', next);
 }
 
 function populate_list($item, target, ids) {
@@ -193,4 +177,39 @@ function populate_list($item, target, ids) {
     s += '<li data-id="' + id + '">' + title + '</li>';
   });
   $divs[target].find('ul').append(s);
+}
+
+function next() {
+  playlist_pos++;
+  _play();
+}
+
+function prev() {
+  playlist_pos--;
+  _play();
+}
+
+function _play() {
+  if (options.repeat) playlist_pos = (playlist_pos + playlist.length) % playlist.length;
+
+  var song_id = playlist[playlist_pos];
+  if (!song_id) {
+    $nowplaying.song.text('');
+    $nowplaying.album.text('');
+    $nowplaying.artist.text('');
+    $nowplaying.img.attr('src', '/static/img/black.png').addClass('noborder');
+    playlist = [];
+    playlist_pos = 0;
+    $audio[0].pause();
+    return;
+  }
+
+  $divs.songs.find('ul li[data-id=' + song_id + ']').trigger('click');
+}
+
+function toggle_play() {
+  var audio = $audio[0];
+  if (audio.paused) audio.play();
+  else audio.pause();
+  console.log('Music is now ' + ((audio.paused) ? 'paused' : 'playing'));
 }
