@@ -49,11 +49,11 @@ function start() {
 
     // Populate the column
     var s = '';
-    s += '<ul>';
+    s += '<ul class="nav nav-list">';
     s += (key === 'artists')
-       ? '<li data-id="all">All Artists</li>'
+       ? '<li data-id="all"><a href="#">All Artists</a></li>'
        : (key === 'albums')
-       ? '<li data-id="all">All Albums</li>'
+       ? '<li data-id="all"><a href="#">All Albums</a></li>'
        : '';
     s += '</ul>';
     $divs[key].append(s);
@@ -72,8 +72,11 @@ function start() {
 
     current_artist = +id || null;
 
+    clear_active($divs.artists);
+    $this.addClass('active');
+
     // Populate the albums
-    $divs.albums.find('ul').html('<li data-id="all">All Albums</li>');
+    $divs.albums.find('ul').html('<li data-id="all"><a href="#">All Albums</a></li>');
     populate_list($divs.albums, 'albums', ids);
 
     // Populate the songs
@@ -88,6 +91,9 @@ function start() {
     var $this = $(this),
         id = $this.attr('data-id'),
         ids = cache.songs_by_album[id];
+
+    clear_active($divs.albums);
+    $this.addClass('active');
 
     // Populate the songs
     $divs.songs.find('ul').html('');
@@ -116,10 +122,14 @@ function start() {
 
     playlist = [];
     $divs.songs.find('ul li').each(function() {
-      playlist.push($(this).attr('data-id'));
+      var $_this = $(this);
+      playlist.push($_this.attr('data-id'));
+      $_this.removeClass('active');
     });
     playlist_pos = playlist.indexOf(song_id);
     console.log('Playlist pos ' + playlist_pos + ': ' + playlist);
+
+    $this.addClass('active');
 
     // Get the newest song url
     $.ajax({
@@ -174,7 +184,7 @@ function populate_list($item, target, ids) {
   ids.forEach(function(id) {
     var a = cache[target][id],
         title = (a.name || a.title) + ((a.year) ? ' (' + a.year + ')' : '');
-    s += '<li data-id="' + id + '">' + title + '</li>';
+    s += '<li data-id="' + id + '"><a href="#">' + title + '</a></li>';
   });
   $divs[target].find('ul').append(s);
 }
@@ -212,4 +222,10 @@ function toggle_play() {
   if (audio.paused) audio.play();
   else audio.pause();
   console.log('Music is now ' + ((audio.paused) ? 'paused' : 'playing'));
+}
+
+function clear_active($div) {
+  $div.find('ul li').each(function() {
+    $(this).removeClass('active');
+  });
 }
