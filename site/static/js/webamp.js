@@ -63,9 +63,9 @@ function start() {
 
 
   // Artist click
-  $('#artists ul li').live('click', function() {
+  $('#artists ul li a').live('click', function() {
     var $this = $(this),
-        id = $this.attr('data-id'),
+        id = $this.parent().attr('data-id'),
         ids = (id === 'all')
             ? Object.keys(cache.albums)
             : cache.albums_by_artist[id];
@@ -73,7 +73,7 @@ function start() {
     current_artist = +id || null;
 
     clear_active($divs.artists);
-    $this.addClass('active');
+    $this.parent().addClass('active');
 
     // Populate the albums
     $divs.albums.find('ul').html('<li data-id="all"><a href="#">All Albums</a></li>');
@@ -84,16 +84,18 @@ function start() {
     ids.forEach(function(album_id) {
       populate_list($divs.songs, 'songs', cache.songs_by_album[album_id]);
     });
+
+    return false;
   });
 
   // Album click
-  $('#albums ul li').live('click', function() {
+  $('#albums ul li a').live('click', function() {
     var $this = $(this),
-        id = $this.attr('data-id'),
+        id = $this.parent().attr('data-id'),
         ids = cache.songs_by_album[id];
 
     clear_active($divs.albums);
-    $this.addClass('active');
+    $this.parent().addClass('active');
 
     // Populate the songs
     $divs.songs.find('ul').html('');
@@ -108,12 +110,14 @@ function start() {
       // all the songs
       populate_list($divs.songs, 'songs', Object.keys(cache.songs));
     }
+
+    return false;
   });
 
   // Event listeners on songs
-  $('#songs ul li').live('click', function() {
+  $('#songs ul li a').live('click', function() {
     var $this = $(this),
-        song_id = $this.attr('data-id'),
+        song_id = $this.parent().attr('data-id'),
         artist = cache.songs[song_id].artist['#'],
         album = cache.songs[song_id].album['#'],
         song = cache.songs[song_id].title;
@@ -129,7 +133,11 @@ function start() {
     playlist_pos = playlist.indexOf(song_id);
     console.log('Playlist pos ' + playlist_pos + ': ' + playlist);
 
-    $this.addClass('active');
+    $this.parent().addClass('active');
+
+    // Add the icon
+    $divs.songs.find('ul li a i').remove();
+    $this.prepend('<i class="icon-music icon-white"></i>');
 
     // Get the newest song url
     $.ajax({
@@ -158,11 +166,33 @@ function start() {
       $audio[0].pause();
       $audio[0].play();
     }
+
+    return false;
   });
 
+  // next song
   $audio.on('ended', function() {
     console.log('song ended');
     next();
+  });
+
+  // Enlarge album art
+  $('img.album-art').hover(function() {
+    var $this = $(this);
+    $this.parent().parent().css("z-index", 1);
+    $this.animate({
+      'height': '256',
+      'width': '256',
+      'top': '-=200'
+    }, 'fast');
+  }, function() {
+    var $this = $(this);
+    $this.parent().parent().css("z-index", 0);
+    $this.animate({
+      'height': '56',
+      'width': '56',
+      'top': '+=200'
+    }, 'fast');
   });
 
   // Keyboard shortcuts
@@ -208,13 +238,15 @@ function _play() {
     $nowplaying.album.text('');
     $nowplaying.artist.text('');
     $nowplaying.img.attr('src', '/static/img/black.png').addClass('noborder');
+    $divs.songs.find('ul li a i').remove();
+    $divs.songs.find('ul li').removeClass('active');
     playlist = [];
     playlist_pos = 0;
     $audio[0].pause();
     return;
   }
 
-  $divs.songs.find('ul li[data-id=' + song_id + ']').trigger('click');
+  $divs.songs.find('ul li[data-id=' + song_id + ']').find('a').trigger('click');
 }
 
 function toggle_play() {
