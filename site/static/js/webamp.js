@@ -44,7 +44,7 @@ function start() {
 
   // Loop artists albums and songs
   Object.keys($divs).forEach(function(key) {
-    $data.append('<div id="' + key + '" class="span4"><h2>' + key + '</h2></div>');
+    $data.append('<div id="' + key + '" class="span4 music-list"><h2>' + key + '</h2></div>');
     $divs[key] = $('#' + key);
 
     // Populate the column
@@ -179,6 +179,7 @@ function start() {
   // Enlarge album art
   $('img.album-art').hover(function() {
     var $this = $(this);
+    if ($this.hasClass('noborder')) return;
     $this.parent().parent().css("z-index", 1);
     $this.animate({
       'height': '256',
@@ -187,6 +188,7 @@ function start() {
     }, 'fast');
   }, function() {
     var $this = $(this);
+    if ($this.hasClass('noborder')) return;
     $this.parent().parent().css("z-index", 0);
     $this.animate({
       'height': '56',

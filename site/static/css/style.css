@@ -23,6 +23,12 @@
 #footer #nowplaying ul {
 	list-style: none;
 }
+
+.music-list {
+	overflow-y: scroll;
+	height: 100%;
+}
+
 audio {
 }
 
