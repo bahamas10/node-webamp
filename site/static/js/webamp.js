@@ -84,6 +84,7 @@ function start() {
     ids.forEach(function(album_id) {
       populate_list($divs.songs, 'songs', cache.songs_by_album[album_id]);
     });
+    highlight_current_song();
 
     return false;
   });
@@ -110,6 +111,7 @@ function start() {
       // all the songs
       populate_list($divs.songs, 'songs', Object.keys(cache.songs));
     }
+    highlight_current_song();
 
     return false;
   });
@@ -117,12 +119,9 @@ function start() {
   // Event listeners on songs
   $('#songs ul li a').live('click', function() {
     var $this = $(this),
-        song_id = $this.parent().attr('data-id'),
-        artist = cache.songs[song_id].artist['#'],
-        album = cache.songs[song_id].album['#'],
-        song = cache.songs[song_id].title;
+        song_id = $this.parent().attr('data-id');
 
-    console.log('Clicked: ' + song);
+    console.log('Clicked: ' + song_id);
 
     playlist = [];
     $divs.songs.find('ul li').each(function() {
@@ -133,39 +132,7 @@ function start() {
     playlist_pos = playlist.indexOf(song_id);
     console.log('Playlist pos ' + playlist_pos + ': ' + playlist);
 
-    $this.parent().addClass('active');
-
-    // Add the icon
-    $divs.songs.find('ul li a i').remove();
-    $this.prepend('<i class="icon-music icon-white"></i>');
-
-    // Get the newest song url
-    $.ajax({
-      'url': '/api/songs/' + song_id + '/new',
-      'dataType': 'json',
-      'success': cb,
-      'error': cb
-    });
-
-    function cb(data) {
-      console.log(data);
-      $audio.attr('src', data.url || cache.songs[song_id].url);
-
-      console.log(data.url || cache.songs[song_id].url);
-
-      $nowplaying.artist.text(artist);
-      $nowplaying.album.text(album);
-      $nowplaying.song.text(song);
-
-      // WTF API
-      var img_src = data.art || cache.songs[song_id].art;
-      if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
-
-      $nowplaying.img.attr('src', img_src).removeClass('noborder');
-
-      $audio[0].pause();
-      $audio[0].play();
-    }
+    _play();
 
     return false;
   });
@@ -248,7 +215,39 @@ function _play() {
     return;
   }
 
-  $divs.songs.find('ul li[data-id=' + song_id + ']').find('a').trigger('click');
+  var artist = cache.songs[song_id].artist['#'],
+      album = cache.songs[song_id].album['#'],
+      song = cache.songs[song_id].title;
+
+  highlight_current_song(song_id);
+
+  // Get the newest song url
+  $.ajax({
+    'url': '/api/songs/' + song_id + '/new',
+    'dataType': 'json',
+    'success': cb,
+    'error': cb
+  });
+
+  function cb(data) {
+    console.log(data);
+    $audio.attr('src', data.url || cache.songs[song_id].url);
+
+    console.log(data.url || cache.songs[song_id].url);
+
+    $nowplaying.artist.text(artist);
+    $nowplaying.album.text(album);
+    $nowplaying.song.text(song);
+
+    // WTF API
+    var img_src = data.art || cache.songs[song_id].art;
+    if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
+
+    $nowplaying.img.attr('src', img_src).removeClass('noborder');
+
+    $audio[0].pause();
+    $audio[0].play();
+  }
 }
 
 function toggle_play() {
@@ -259,7 +258,18 @@ function toggle_play() {
 }
 
 function clear_active($div) {
-  $div.find('ul li').each(function() {
-    $(this).removeClass('active');
-  });
+  $div.find('ul li').removeClass('active');
+}
+
+function highlight_current_song(song_id) {
+  song_id = song_id || playlist[playlist_pos];
+
+  var $song_obj = $divs.songs.find('ul li[data-id=' + song_id + '] a');
+
+  // if the song_obj is found, highlight it
+  clear_active($divs.songs);
+  $song_obj.parent().addClass('active');
+  // Add the icon
+  $divs.songs.find('ul li a i').remove();
+  $song_obj.prepend('<i class="icon-music icon-white"></i>');
 }
