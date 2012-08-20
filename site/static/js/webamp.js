@@ -64,7 +64,7 @@ function start() {
     s += '</ul>';
     $divs[key].append(s);
 
-    populate_list($divs[key], key, sort(Object.keys(cache[key]), key));
+    populate_list($divs[key], key, Object.keys(cache[key]));
   });
 
 
@@ -83,7 +83,7 @@ function start() {
 
     // Populate the albums
     $divs.albums.find('ul').html('<li data-id="all"><a href="#">All Albums</a></li>');
-    populate_list($divs.albums, 'albums', sort(ids, 'albums'));
+    populate_list($divs.albums, 'albums', ids);
 
     // Populate the songs
     $divs.songs.find('ul').html('');
@@ -91,7 +91,7 @@ function start() {
     ids.forEach(function(album_id) {
       r = r.concat(cache.songs_by_album[album_id]);
     });
-    populate_list($divs.songs, 'songs', sort(r, 'songs'));
+    populate_list($divs.songs, 'songs', r);
     highlight_current_song();
 
     return false;
@@ -120,7 +120,7 @@ function start() {
       // all the songs
       r = Object.keys(cache.songs);
     }
-    populate_list($divs.songs, 'songs', sort(r, 'songs'));
+    populate_list($divs.songs, 'songs', r);
     highlight_current_song();
 
     return false;
@@ -190,7 +190,7 @@ function start() {
 
 function populate_list($item, target, ids) {
   var s = '';
-  ids.forEach(function(id) {
+  sort(ids, target).forEach(function(id) {
     var a = cache[target][id],
         title = (a.name || a.title) + ((a.year) ? ' (' + a.year + ')' : '');
     s += '<li data-id="' + id + '"><a href="#">' + ((a.track && a.track != 0) ? a.track + '. ' : '') + title + '</a></li>';
@@ -303,12 +303,29 @@ function sort(ids, type) {
   });
 
   arr.sort(function(a, b) {
+    // Artist name
+    var artist_name1 = ((type === 'artists') ? a.name : a.artist['#']).toLowerCase().replace(article_re, '');
+        artist_name2 = ((type === 'artists') ? b.name : b.artist['#']).toLowerCase().replace(article_re, '');
+
+    if (artist_name1 > artist_name2) return 1;
+    else if (artist_name1 < artist_name2) return -1;
+
+    // Album Year
     if (+a.year > +b.year) return 1;
     else if (+a.year < +b.year) return -1;
 
+    // Album name
+    var album_name1 = ((type === 'albums') ? a.name : a.album['#']).toLowerCase().replace(article_re, '');
+        album_name2 = ((type === 'albums') ? b.name : b.album['#']).toLowerCase().replace(article_re, '');
+
+    if (album_name1 > album_name2) return 1;
+    else if (album_name1 < album_name2) return -1;
+
+    // Track number
     if (+a.track > +b.track) return 1;
     else if (+a.track < +b.track) return -1;
 
+    // Bruteforce name sort
     var name1 = (a.name || a.title || '').toLowerCase().replace(article_re, ''),
         name2 = (b.name || b.title || '').toLowerCase().replace(article_re, '');
 
