@@ -13,6 +13,7 @@ var cache = {
     },
     orig_title = '',
     orig_favicon = '',
+    article_re = /^the |^a /,
     $data, $audio, $divs, $nowplaying, $favicon;
 
 $(document).ready(function() {
@@ -63,7 +64,7 @@ function start() {
     s += '</ul>';
     $divs[key].append(s);
 
-    populate_list($divs[key], key, Object.keys(cache[key]));
+    populate_list($divs[key], key, sort(Object.keys(cache[key]), key));
   });
 
 
@@ -82,13 +83,15 @@ function start() {
 
     // Populate the albums
     $divs.albums.find('ul').html('<li data-id="all"><a href="#">All Albums</a></li>');
-    populate_list($divs.albums, 'albums', ids);
+    populate_list($divs.albums, 'albums', sort(ids, 'albums'));
 
     // Populate the songs
     $divs.songs.find('ul').html('');
+    var r = [];
     ids.forEach(function(album_id) {
-      populate_list($divs.songs, 'songs', cache.songs_by_album[album_id]);
+      r = r.concat(cache.songs_by_album[album_id]);
     });
+    populate_list($divs.songs, 'songs', sort(r, 'songs'));
     highlight_current_song();
 
     return false;
@@ -105,17 +108,19 @@ function start() {
 
     // Populate the songs
     $divs.songs.find('ul').html('');
+    var r = [];
     if (ids) {
-      populate_list($divs.songs, 'songs', ids);
+      r = ids;
     } else if (current_artist) {
       // All albums by the artist
       cache.albums_by_artist[current_artist].forEach(function(album_id) {
-        populate_list($divs.songs, 'songs', cache.songs_by_album[album_id]);
+        r = r.concat(cache.songs_by_album[album_id]);
       });
     } else {
       // all the songs
-      populate_list($divs.songs, 'songs', Object.keys(cache.songs));
+      r = Object.keys(cache.songs);
     }
+    populate_list($divs.songs, 'songs', sort(r, 'songs'));
     highlight_current_song();
 
     return false;
@@ -188,7 +193,7 @@ function populate_list($item, target, ids) {
   ids.forEach(function(id) {
     var a = cache[target][id],
         title = (a.name || a.title) + ((a.year) ? ' (' + a.year + ')' : '');
-    s += '<li data-id="' + id + '"><a href="#">' + title + '</a></li>';
+    s += '<li data-id="' + id + '"><a href="#">' + ((a.track && a.track != 0) ? a.track + '. ' : '') + title + '</a></li>';
   });
   $divs[target].find('ul').append(s);
 }
@@ -289,4 +294,26 @@ function highlight_current_song(song_id) {
   // Add the icon
   $divs.songs.find('ul li a i').remove();
   $song_obj.prepend('<i class="icon-music icon-white"></i>');
+}
+
+function sort(ids, type) {
+  var arr = [];
+  ids.forEach(function(id) {
+    arr.push(cache[type][id]);
+  });
+
+  arr.sort(function(a, b) {
+    if (+a.year > +b.year) return 1;
+    else if (+a.year < +b.year) return -1;
+
+    if (+a.track > +b.track) return 1;
+    else if (+a.track < +b.track) return -1;
+
+    var name1 = (a.name || a.title || '').toLowerCase().replace(article_re, ''),
+        name2 = (b.name || b.title || '').toLowerCase().replace(article_re, '');
+
+    return (name1 > name2) ? 1 : -1;
+  });
+
+  return arr.map(function(a) { return a['@'].id; });
 }
