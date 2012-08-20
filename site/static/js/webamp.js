@@ -12,7 +12,8 @@ var cache = {
       'repeat': false,
     },
     orig_title = '',
-    $data, $audio, $divs, $nowplaying;
+    orig_favicon = '',
+    $data, $audio, $divs, $nowplaying, $favicon;
 
 $(document).ready(function() {
   var i = 0;
@@ -40,7 +41,9 @@ function start() {
     'album': $('#nowplaying li.album'),
     'song': $('#nowplaying li.song')
   };
-  orig_title = $('title').text();
+  $favicon = $('.favicon');
+  orig_favicon = $favicon.attr('href');
+  orig_title = document.title;
 
   $data.html('');
 
@@ -205,6 +208,7 @@ function _play() {
 
   var song_id = playlist[playlist_pos];
   if (!song_id) {
+    // clear EVERYTHING
     $nowplaying.song.text('');
     $nowplaying.album.text('');
     $nowplaying.artist.text('');
@@ -212,6 +216,7 @@ function _play() {
     $divs.songs.find('ul li a i').remove();
     $divs.songs.find('ul li').removeClass('active');
     document.title = orig_title;
+    $favicon.attr('href', orig_favicon);
     playlist = [];
     playlist_pos = 0;
     $audio[0].pause();
@@ -247,6 +252,13 @@ function _play() {
     if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
 
     $nowplaying.img.attr('src', img_src).removeClass('noborder');
+
+    // Favicon magic
+    var $old_favicon = $('.favicon');
+    var $fav = $old_favicon.clone();
+    $old_favicon.remove();
+    $fav.attr('href', img_src);
+    $('body').append($fav);
 
     document.title = artist + ' - ' + song;
 
