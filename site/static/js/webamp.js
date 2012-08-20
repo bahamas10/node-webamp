@@ -11,6 +11,7 @@ var cache = {
     options = {
       'repeat': false,
     },
+    orig_title = '',
     $data, $audio, $divs, $nowplaying;
 
 $(document).ready(function() {
@@ -39,6 +40,7 @@ function start() {
     'album': $('#nowplaying li.album'),
     'song': $('#nowplaying li.song')
   };
+  orig_title = $('title').text();
 
   $data.html('');
 
@@ -209,6 +211,7 @@ function _play() {
     $nowplaying.img.attr('src', '/static/img/black.png').addClass('noborder');
     $divs.songs.find('ul li a i').remove();
     $divs.songs.find('ul li').removeClass('active');
+    document.title = orig_title;
     playlist = [];
     playlist_pos = 0;
     $audio[0].pause();
@@ -244,6 +247,8 @@ function _play() {
     if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
 
     $nowplaying.img.attr('src', img_src).removeClass('noborder');
+
+    document.title = artist + ' - ' + song;
 
     $audio[0].pause();
     $audio[0].play();
