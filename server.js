@@ -63,11 +63,12 @@ module.exports = function(config) {
 
     // Keep-Alive
     setInterval(function() {
-      log('Keep Alive');
+      log('Sending Keep Alive');
       conn.ping(function(err, body) {
-        log(body);
-        if (err || !body.session_expire) conn.authenticate(function (err, body) {
+        if (body.session_expire) log('Sessions expires: %s', body.session_expire);
+        if (err || !body.session_expire) conn.authenticate(function(err, body) {
           if (err) throw err;
+          log('Session Expired: Reauthentication successful');
         });
       });
     }, +conf.ampache.ping || 10 * 60 * 1000);
@@ -124,7 +125,20 @@ function api(req, res, params) {
 
     func.call(conn, filter, function(err, body) {
       if (err) throw err;
-      res.end(JSON.stringify(body));
+      if (body && body.error) {
+        // Try once to reauth
+        log(body.error);
+        log('Session expired - reauthenticating');
+        conn.authenticate(function(err, body) {
+          if (err) throw err;
+          func.call(conn, filter, function(err, body) {
+            if (err) throw err;
+            res.end(JSON.stringify(body));
+          });
+        });
+      } else {
+        res.end(JSON.stringify(body));
+      }
     });
   } else {
     // User wants it from the cache
