@@ -148,9 +148,9 @@ function start() {
   });
 
   // next song
-  $audio.on('ended', function() {
-    console.log('song ended');
-    next();
+  $audio.on('ended', next);
+  $audio.on('error', function(e) {
+    console.log(e);
   });
 
   // Enlarge album art
