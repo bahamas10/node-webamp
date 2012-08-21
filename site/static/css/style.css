@@ -46,6 +46,13 @@ html, body {
 	height: 90%;
 }
 
+#themes {
+	float: right;
+}
+#themes .theme-list {
+	position: absolute;
+}
+
 audio {
 }
 

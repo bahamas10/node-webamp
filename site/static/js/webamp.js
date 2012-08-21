@@ -15,7 +15,7 @@ var cache = {
     orig_title = '',
     orig_favicon = '',
     article_re = /^the |^a /,
-    $data, $audio, $divs, $nowplaying, $favicon, $dropdown;
+    $data, $audio, $divs, $nowplaying, $favicon, $dropdown, $themes;
 
 $(document).ready(function() {
   var i = 0;
@@ -45,6 +45,7 @@ function start() {
   };
   $favicon = $('.favicon');
   $dropdown = $('select');
+  $themes = $('#themes');
   orig_favicon = $favicon.attr('href');
   orig_title = document.title;
 
@@ -192,20 +193,28 @@ function start() {
 
   // Themes
   Object.keys(cache.themes).forEach(function(theme) {
-    $dropdown.append('<option>' + theme + '</option>');
+    $themes.find('ul').append('<li><a href="#">' + theme + '</a></li>');
   });
-  $dropdown.change(function() {
-    var val = $(this).val();
+  $themes.find('ul li a').live('click', function() {
+    var $this = $(this);
+    clear_active($themes);
+    $this.parent().addClass('active');
+
+    var val = $this.text();
+    console.log(val);
     $.cookie('theme', val, { expires: 7 });
     set_theme(val);
   });
-
-  $dropdown.find('option').each(function() {
-    var val = $(this).val();
-    if (val === $.cookie('theme')) $(this).attr('selected', 'selected');
+  $themes.find('ul li a').each(function() {
+    var val = $(this).text();
+    if (val === $.cookie('theme')) $(this).trigger('click');
   });
-  $dropdown.trigger('change');
-
+  $themes.find('ul').hide(0);
+  $themes.hover(function() {
+    $themes.find('ul').show('fast');
+  }, function() {
+    $themes.find('ul').hide('fast');
+  });
 }
 
 function populate_list($item, target, ids) {
@@ -363,4 +372,5 @@ function sort(ids, type) {
 
 function set_theme(theme) {
   $('#theme-css').attr('href', cache.themes[theme] || '');
+  $themes.find('.current-theme').text(theme);
 }
