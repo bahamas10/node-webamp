@@ -193,7 +193,7 @@ function start() {
 
   // Themes
   Object.keys(cache.themes).forEach(function(theme) {
-    $themes.find('ul').append('<li><a href="#">' + theme + '</a></li>');
+    if (theme !== 'img') $themes.find('ul').append('<li><a href="#">' + theme + '</a></li>');
   });
   $themes.find('ul li a').live('click', function() {
     var $this = $(this);
@@ -227,7 +227,10 @@ function populate_list($item, target, ids) {
         album = (a.album) ? a.album['#'] : '';
 
     if (add_albums && old_album !== album) s += '<li data-id="null" class="nav-header">' + album + ' (' + cache.albums[a.album['@'].id].year + ')</li>';
-    s += '<li data-id="' + id + '"><a href="#">' + ((a.track && a.track != 0) ? a.track + '. ' : '') + title + '</a></li>';
+    s += '<li data-id="' + id + '"><a href="#">';
+    s += (target === 'albums') ? '<img src="' + a.art + '" width="20" height="20" />' : '';
+    s += ((a.track && a.track != 0) ? a.track + '. ' : '') + title;
+    s += '</a></li>';
     old_album = album;
   });
   $divs[target].find('ul').append(s);
