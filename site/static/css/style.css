@@ -32,18 +32,24 @@ html, body {
 }
 
 #main {
-	height: 100%;
+	position: absolute;
+	top: 100px;
+	bottom: 100px;
+	width: 90%;
 }
 #data {
+	position: relative;
 	height: 100%;
 }
 .music-list {
+	position: relative;
 	height: 100%;
 }
 .music-list ul {
+	position: relative;
+	height: 100%;
 	overflow-y: scroll;
 	overflow-x: hidden;
-	height: 90%;
 }
 
 #themes {
@@ -51,6 +57,7 @@ html, body {
 }
 #themes .theme-list {
 	position: absolute;
+	z-index: 999;
 }
 
 audio {
