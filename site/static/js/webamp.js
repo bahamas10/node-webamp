@@ -3,7 +3,8 @@ var cache = {
       'albums': null,
       'songs': null,
       'songs_by_album': null,
-      'albums_by_artist': null
+      'albums_by_artist': null,
+      'themes': null
     },
     current_artist = null,
     playlist = [],
@@ -14,12 +15,12 @@ var cache = {
     orig_title = '',
     orig_favicon = '',
     article_re = /^the |^a /,
-    $data, $audio, $divs, $nowplaying, $favicon;
+    $data, $audio, $divs, $nowplaying, $favicon, $dropdown;
 
 $(document).ready(function() {
   var i = 0;
   Object.keys(cache).forEach(function(key) {
-    $.getJSON('/api/'+key, function(data) {
+    $.getJSON('/api/' + key, function(data) {
       console.log('Got ' + key);
       cache[key] = data;
       if (++i >= Object.keys(cache).length)
@@ -43,6 +44,7 @@ function start() {
     'song': $('#nowplaying li.song')
   };
   $favicon = $('.favicon');
+  $dropdown = $('select');
   orig_favicon = $favicon.attr('href');
   orig_title = document.title;
 
@@ -187,6 +189,15 @@ function start() {
   Mousetrap.bind('space', toggle_play);
   Mousetrap.bind('left', prev);
   Mousetrap.bind('right', next);
+
+  // Themes
+  Object.keys(cache.themes).forEach(function(theme) {
+    $dropdown.append('<option>' + theme + '</option>');
+  });
+  $dropdown.change(function() {
+    set_theme($(this).val());
+  });
+
 }
 
 function populate_list($item, target, ids) {
@@ -340,4 +351,8 @@ function sort(ids, type) {
   });
 
   return arr.map(function(a) { return a['@'].id; });
+}
+
+function set_theme(theme) {
+  $('#theme-css').attr('href', cache.themes[theme] || '');
 }

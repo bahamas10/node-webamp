@@ -10,7 +10,7 @@ Only tested on Chrome, uses HTML5 Audio, probably won't work on any other browse
 Installation
 ------------
 
-This is meant to be installed as a command-line utility
+First install [Node](http://nodejs.org), then install this program using [NPM](http://npmjs.org)
 
     npm install -g webamp
 
@@ -87,6 +87,16 @@ Same as above, but force the info to come from Ampache and not the cache
 
 Return an object with an album or artist as the key, and a list of song or album ids (respectively)
 
+### /api/themes
+
+An object representing the possible themes to use
+
+Credit
+------
+
+* [Ampache](http://ampache.org) - Without this, you wouldn't be able to listen to your music!
+* [Twitter Bootstrap](http://twitter.github.com/bootstrap/) - Layout made easy
+* [Bootswatch](http://bootswatch.com/) - Themes made easy
 
 License
 -------

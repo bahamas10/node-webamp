@@ -6,6 +6,10 @@ var http = require('http'),
     url = require('url'),
     util = require('util'),
     router = new require('routes').Router(),
+    theme_url = path.join('/static/third-party/bootswatch'),
+    theme_names = fs.readdirSync(
+      path.join(__dirname, 'site', theme_url)
+    ),
     index_html = fs.readFileSync(
       path.join(__dirname, 'site', 'index.html')
     ),
@@ -147,6 +151,12 @@ function api(req, res, params) {
       data = ['artists', 'albums', 'songs'];
     } else if (!cache[type]) {
       data = [];
+      if (type === 'themes') {
+        data = {};
+        theme_names.forEach(function(theme) {
+          data[theme] = path.join(theme_url, theme, 'bootstrap.min.css');
+        });
+      }
     } else if (filter) {
       data = cache[type][filter];
     } else {
