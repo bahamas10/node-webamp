@@ -195,8 +195,16 @@ function start() {
     $dropdown.append('<option>' + theme + '</option>');
   });
   $dropdown.change(function() {
-    set_theme($(this).val());
+    var val = $(this).val();
+    $.cookie('theme', val, { expires: 7 });
+    set_theme(val);
   });
+
+  $dropdown.find('option').each(function() {
+    var val = $(this).val();
+    if (val === $.cookie('theme')) $(this).attr('selected', 'selected');
+  });
+  $dropdown.trigger('change');
 
 }
 
