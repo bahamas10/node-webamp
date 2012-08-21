@@ -53,11 +53,12 @@ function start() {
 
   // Loop artists albums and songs
   Object.keys($divs).forEach(function(key) {
-    $data.append('<div id="' + key + '" class="span4 music-list"><h2>' + key + '</h2></div>');
+    $data.append('<div id="' + key + '" class="span4 music-list"></div>');
     $divs[key] = $('#' + key);
 
     // Populate the column
     var s = '';
+    s += '<input class="input-' + key + '" placeholder="' + key + '..." data-key="' + key + '" /><br />';
     s += '<ul class="nav nav-list">';
     s += (key === 'artists')
        ? '<li data-id="all"><a href="#">All Artists</a></li>'
@@ -209,11 +210,28 @@ function start() {
     var val = $(this).text();
     if (val === $.cookie('theme')) $(this).trigger('click');
   });
-  $themes.find('ul').hide(0);
+  $themes.find('ul').hide();
   $themes.hover(function() {
     $themes.find('ul').show('fast');
   }, function() {
     $themes.find('ul').hide('fast');
+  });
+
+  // Filter
+  $('input').keyup(function() {
+    var $this = $(this),
+        key = $this.attr('data-key'),
+        val = $this.val();
+
+    if (val === '') return $divs[key].find('ul li a').show();
+    $divs[key].find('ul li a').each(function() {
+      var $this = $(this);
+      if ($this.text().toLowerCase().indexOf(val) === -1) {
+        $this.hide();
+      } else {
+        $this.show();
+      }
+    });
   });
 }
 

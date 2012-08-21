@@ -66,3 +66,11 @@ audio {
 .noborder {
 	border: none !important;
 }
+
+input {
+	font-size: 16pt;
+	font-weight: bold;
+	border: none;
+	background: none;
+	border-left: 2px solid gray;
+}
