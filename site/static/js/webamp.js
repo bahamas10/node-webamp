@@ -135,8 +135,9 @@ function start() {
 
     playlist = [];
     $divs.songs.find('ul li').each(function() {
-      var $_this = $(this);
-      playlist.push($_this.attr('data-id'));
+      var $_this = $(this),
+          data_id = $_this.attr('data-id');
+      if (+data_id) playlist.push(data_id);
       $_this.removeClass('active');
     });
     playlist_pos = playlist.indexOf(song_id);
@@ -189,11 +190,17 @@ function start() {
 }
 
 function populate_list($item, target, ids) {
-  var s = '';
+  var s = '',
+      add_albums = target === 'songs',
+      old_album;
   sort(ids, target).forEach(function(id) {
     var a = cache[target][id],
-        title = (a.name || a.title) + ((a.year) ? ' (' + a.year + ')' : '');
+        title = (a.name || a.title) + ((a.year) ? ' (' + a.year + ')' : ''),
+        album = (a.album) ? a.album['#'] : '';
+
+    if (add_albums && old_album !== album) s += '<li data-id="null" class="nav-header">' + album + ' (' + cache.albums[a.album['@'].id].year + ')</li>';
     s += '<li data-id="' + id + '"><a href="#">' + ((a.track && a.track != 0) ? a.track + '. ' : '') + title + '</a></li>';
+    old_album = album;
   });
   $divs[target].find('ul').append(s);
 }
