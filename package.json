@@ -15,7 +15,8 @@
     "ampache": "~ 0.1.3",
     "open": "~ 0.0.2",
     "st": "~ 0.0.4",
-    "routes": "~ 0.1.0"
+    "routes": "~ 0.1.0",
+    "rimraf": "~2.0.2"
   },
   "bin": {
     "webamp": "./bin/webamp.js"
@@ -25,5 +26,9 @@
   "engines": {
     "node": "*"
   },
-  "keywords": [ "ampache", "owncloud", "viridian" ]
+  "keywords": [
+    "ampache",
+    "owncloud",
+    "viridian"
+  ]
 }

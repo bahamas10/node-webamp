@@ -58,7 +58,7 @@ function start() {
 
     // Populate the column
     var s = '';
-    s += '<input class="input-' + key + '" placeholder="' + key + '..." data-key="' + key + '" /><br />';
+    s += '<input class="input-' + key + '" placeholder="' + key + '" data-key="' + key + '" /><br />';
     s += '<ul class="nav nav-list">';
     s += (key === 'artists')
        ? '<li data-id="all"><a href="#">All Artists</a></li>'
@@ -246,7 +246,7 @@ function populate_list($item, target, ids) {
 
     if (add_albums && old_album !== album) s += '<li data-id="null" class="nav-header">' + album + ' (' + cache.albums[a.album['@'].id].year + ')</li>';
     s += '<li data-id="' + id + '"><a href="#">';
-    s += (target === 'albums') ? '<img src="' + a.art + '" width="20" height="20" />' : '';
+    if (target === 'albums') s += '<img src="' + fix_img_api(cache.songs[cache.songs_by_album[id][0]].art) + '" width="20" height="20" />';
     s += ((a.track && a.track != 0) ? a.track + '. ' : '') + title;
     s += '</a></li>';
     old_album = album;
@@ -310,7 +310,7 @@ function _play() {
 
     // WTF API
     var img_src = data.art || cache.songs[song_id].art;
-    if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
+    img_src = fix_img_api(img_src);
 
     $nowplaying.img.attr('src', img_src).removeClass('noborder');
 
@@ -394,4 +394,9 @@ function sort(ids, type) {
 function set_theme(theme) {
   $('#theme-css').attr('href', cache.themes[theme] || '');
   $themes.find('.current-theme').text(theme);
+}
+
+function fix_img_api(img_src) {
+  if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
+  return img_src;
 }

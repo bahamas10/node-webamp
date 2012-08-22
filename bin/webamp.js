@@ -43,6 +43,7 @@ function usage() {
     '',
     'Options (must be given as the first argument; all options are mutually exclusive)',
     '  --init    | -i: Create a config file at %s',
+    '  --clear   | -c: Clear the cache located at ~/.webamp/cache',
     '  --help    | -h: Print this help message and exit',
     '  --version | -v: Print the version number and exit',
     ''
@@ -58,6 +59,14 @@ switch (args[0]) {
   case '-v': case '--version':
     console.log(version);
     process.exit(0);
+    break;
+  case '-c': case '--clear':
+    var rimraf = require('rimraf');
+    rimraf(path.join(webamp_dir, 'cache'), function(err) {
+      if (err) throw err;
+      console.log('Caches cleared');
+    });
+    return;
     break;
   case '-i': case '--init':
     var conf_stringified = JSON.stringify(default_config, null, 2);
