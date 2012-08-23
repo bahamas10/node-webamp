@@ -14,22 +14,6 @@ var http = require('http'),
       path.join(__dirname, 'site', 'index.html')
     ),
     mount = require('st')({
-      /*
-      'cache': {
-        'content': {
-          'maxAge': 1,
-          'max': 1
-        },
-        'fd': {
-          'max': 1,
-          'maxAge': 1,
-        },
-        'stat': {
-          'max': 1,
-          'maxAge': 1,
-        }
-      },
-*/
       'path': path.join('site', 'static'),
       'url': 'static/'
     }),
@@ -39,6 +23,8 @@ var http = require('http'),
     cache_ready = false,
     cache_dir = 'cache',
     cache = {};
+
+require('log-timestamp');
 
 // make the routes
 router.addRoute('/', index);
@@ -56,23 +42,23 @@ module.exports = function(config) {
   // Authenticate to Ampache
   conn.authenticate(function(err, body) {
     if (err) {
-      log('Failed to authenticate!');
-      log('Username: %s', conf.ampache.user);
-      log('URL: %s', conf.ampache.url);
+      console.error('Failed to authenticate!');
+      console.error('Username: %s', conf.ampache.user);
+      console.error('URL: %s', conf.ampache.url);
       throw err;
     }
-    log('Successfully Authenticated!');
+    console.log('Successfully Authenticated!');
 
     populate_cache(body);
 
     // Keep-Alive
     setInterval(function() {
-      log('Sending Keep Alive');
+      console.log('Sending Keep Alive');
       conn.ping(function(err, body) {
-        if (body.session_expire) log('Sessions expires: %s', body.session_expire);
+        if (body.session_expire) console.log('Sessions expires: %s', body.session_expire);
         if (err || !body.session_expire) conn.authenticate(function(err, body) {
           if (err) throw err;
-          log('Session Expired: Reauthentication successful');
+          console.log('Session Expired: Reauthentication successful');
         });
       });
     }, +conf.ampache.ping || 10 * 60 * 1000);
@@ -80,7 +66,7 @@ module.exports = function(config) {
 
   // Create the server
   return http.createServer(on_request).listen(conf.web.port, conf.web.host, function() {
-    log('Server running at http://%s:%d/', conf.web.host, conf.web.port);
+    console.log('Server running at http://%s:%d/', conf.web.host, conf.web.port);
   });
 };
 
@@ -131,8 +117,8 @@ function api(req, res, params) {
       if (err) throw err;
       if (body && body.error) {
         // Try once to reauth
-        log(body.error);
-        log('Session expired - reauthenticating');
+        console.warn(body.error);
+        console.warn('Session expired - reauthenticating');
         conn.authenticate(function(err, body) {
           if (err) throw err;
           func.call(conn, filter, function(err, body) {
@@ -169,7 +155,7 @@ function api(req, res, params) {
 
 // Populate the caches with data
 function populate_cache(body) {
-  log('Populating cache');
+  console.log('Populating cache');
   var funcs = {
         'artists': AmpacheSession.prototype.get_artists,
         'albums': AmpacheSession.prototype.get_albums,
@@ -183,10 +169,10 @@ function populate_cache(body) {
     ['artists', 'albums', 'songs'].forEach(function(key) {
       try {
         cache[key] = require(path.join(cache_dir, key + '.json'));
-        log('Loaded %s from local cache', key);
+        console.log('Loaded %s from local cache', key);
         try_to_process(key);
       } catch (e) {
-        log('Failed to load %s from local cache', key);
+        console.error('Failed to load %s from local cache', key);
         to_get[key] = funcs[key];
       }
     });
@@ -201,9 +187,9 @@ function populate_cache(body) {
       cache[key] = body;
       // Save the cache
       fs.writeFile(path.join(cache_dir, key + '.json'), JSON.stringify(body), function(err) {
-        if (err) return log(err);
+        if (err) return console.error(err);
       });
-      log('Loaded %s from remote source', key);
+      console.log('Loaded %s from remote source', key);
 
       try_to_process(key);
     });
@@ -221,7 +207,7 @@ function populate_cache(body) {
 
 // Cache 'songs' by 'album', or something
 function cache_x_by_y(x, y) {
-  log('Calculating %s by %s', x, y);
+  console.log('Calculating %s by %s', x, y);
   var key = (x === 'albums') ? 'albums_by_artist' : 'songs_by_album';
   cache[key] = {};
   Object.keys(cache[x]).forEach(function(id) {
@@ -229,17 +215,17 @@ function cache_x_by_y(x, y) {
     cache[key][_id] = cache[key][_id] || [];
     cache[key][_id].push(+id);
   });
-  log('Finished %s by %s', x, y);
+  console.log('Finished %s by %s', x, y);
 }
 
 // Fired when the caches are ready
 function caches_ready(body) {
   cache_ready = true;
-  log('All caches ready');
+  console.log('All caches ready');
 
   // Save the auth data for the update/add/clean times
   fs.writeFile(path.join(cache_dir, 'update.json'), JSON.stringify(body), function(err) {
-    if (err) return log(err);
+    if (err) return console.error(err);
   });
 
   open(util.format('http://%s:%d/', conf.web.host, conf.web.port));
@@ -257,7 +243,7 @@ function cache_up_to_date(body) {
 
   ['add', 'update', 'clean'].forEach(function(key) {
     if (body[key].toJSON() !== old_body[key]) {
-      log('Cache not up-to-date - pulling from remote source (%s)', key);
+      console.log('Cache not up-to-date - pulling from remote source (%s)', key);
       ok = false;
     }
   });
@@ -265,11 +251,7 @@ function cache_up_to_date(body) {
   return ok;
 }
 
-// Simple log function like console.log with the date prepended
-function log() {
-  process.stdout.write(util.format('[%s] ', Date()) + util.format.apply(this, arguments) + '\n');
-}
 function weblog() {
-  if (conf.web.log) log.apply(this, arguments);
+  if (conf.web.log) console.log.apply(this, arguments);
 }
 
