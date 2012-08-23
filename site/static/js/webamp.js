@@ -367,8 +367,10 @@ function sort(ids, type) {
     else if (artist_name1 < artist_name2) return -1;
 
     // Album Year
-    if (+a.year > +b.year) return 1;
-    else if (+a.year < +b.year) return -1;
+    a.year = (type === 'songs') ? cache.albums[cache.songs[a['@'].id].album['@'].id].year : a.year;
+    b.year = (type === 'songs') ? cache.albums[cache.songs[b['@'].id].album['@'].id].year : b.year;
+    if ((+a.year || 0) > (+b.year || 0)) return 1;
+    else if ((+a.year || 0) < (+b.year ||0)) return -1;
 
     // Album name
     var album_name1 = ((type === 'albums') ? a.name : a.album['#']).toLowerCase().replace(article_re, '');
