@@ -21,6 +21,7 @@
   "bin": {
     "webamp": "./bin/webamp.js"
   },
+  "preferGlobal": true,
   "devDependencies": {},
   "optionalDependencies": {},
   "engines": {
