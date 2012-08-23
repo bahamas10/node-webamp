@@ -88,7 +88,7 @@ module.exports = function(config) {
 // Request received
 function on_request(req, res) {
   // Log it
-  log('[%s] request received from %s for %s',
+  weblog('[%s] request received from %s for %s',
       req.method, req.connection.remoteAddress, req.url);
 
   // static hit
@@ -268,5 +268,8 @@ function cache_up_to_date(body) {
 // Simple log function like console.log with the date prepended
 function log() {
   process.stdout.write(util.format('[%s] ', Date()) + util.format.apply(this, arguments) + '\n');
+}
+function weblog() {
+  if (conf.web.log) log.apply(this, arguments);
 }
 
