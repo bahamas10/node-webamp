@@ -14,6 +14,7 @@ var fs = require('fs'),
     util = require('util'),
     server = require('../server'),
     version = require('../package.json').version,
+    mkdirp = require('mkdirp'),
     args = process.argv.slice(2),
     webamp_dir = path.join(process.env['HOME'], '.webamp'),
     config_file = path.join(webamp_dir, 'config.json'),
@@ -28,6 +29,9 @@ var fs = require('fs'),
         'log': true,
         'host': 'localhost',
         'port': 8076
+      },
+      'cache': {
+        'artwork': true
       }
     };
 
@@ -93,7 +97,7 @@ try {
 }
 
 try {
-  fs.mkdirSync(path.join(webamp_dir, 'cache'), '0755');
+  mkdirp(path.join(webamp_dir, 'cache', 'media', 'art'), '0755');
 } catch (e) {}
 
 // Everything should be good now, let's start the server

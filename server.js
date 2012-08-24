@@ -5,6 +5,8 @@ var http = require('http'),
     open = require('open'),
     url = require('url'),
     util = require('util'),
+    request = require('request'),
+    async = require('async'),
     router = new require('routes').Router(),
     theme_url = path.join('/static/third-party/bootswatch'),
     theme_names = fs.readdirSync(
@@ -13,10 +15,6 @@ var http = require('http'),
     index_html = fs.readFileSync(
       path.join(__dirname, 'site', 'index.html')
     ),
-    mount = require('st')({
-      'path': path.join('site', 'static'),
-      'url': 'static/'
-    }),
     AmpacheSession = require('ampache'),
     conn,
     conf,
@@ -24,16 +22,18 @@ var http = require('http'),
     cache_dir = 'cache',
     cache = {};
 
-require('log-timestamp');
-
 // make the routes
 router.addRoute('/', index);
+router.addRoute('/cache/*', cache_hit);
+router.addRoute('/static/*', static_hit);
 router.addRoute('/api/:type?/:filter?/:new?', api);
 
 // Export the function to create the server
 module.exports = function(config) {
   conf = config;
   cache_dir = path.join(conf.webamp_dir, cache_dir);
+
+  require('log-timestamp');
 
   // Create the Ampache Object
   conn = new AmpacheSession(conf.ampache.user, conf.ampache.pass,
@@ -77,13 +77,8 @@ function on_request(req, res) {
   weblog('[%s] request received from %s for %s',
       req.method, req.connection.remoteAddress, req.url);
 
-  // static hit
-  if (mount(req, res)) return;
-
   // Extract the URL
-  var uri = url.parse(req.url),
-      normalized_path = path.normalize(uri.pathname),
-      route = router.match(normalized_path);
+  route = router.match(normalize_url(req.url));
 
   // Route not found
   if (!route) {
@@ -134,7 +129,7 @@ function api(req, res, params) {
     // User wants it from the cache
     var data;
     if (!type) {
-      data = ['artists', 'albums', 'songs'];
+      data = Object.keys(cache);
     } else if (!cache[type]) {
       data = [];
       if (type === 'themes') {
@@ -142,6 +137,10 @@ function api(req, res, params) {
         theme_names.forEach(function(theme) {
           data[theme] = path.join(theme_url, theme, 'bootstrap.min.css');
         });
+      } else if (type === 'conf') {
+        data = {
+          'cache': conf.cache
+        };
       }
     } else if (filter) {
       data = cache[type][filter];
@@ -151,6 +150,29 @@ function api(req, res, params) {
 
     res.end(JSON.stringify(data));
   }
+}
+
+/**
+ * static assets
+ */
+function cache_hit(req, res, params) {
+  var normalized_url = normalize_url(req.url).replace('/cache', '/media'),
+      filename = path.join(cache_dir, normalized_url);
+  _serve_file(filename, res);
+}
+function static_hit(req, res, params) {
+  var normalized_url = normalize_url(req.url);
+      filename = path.join(__dirname, 'site', normalized_url);
+  _serve_file(filename, res);
+}
+function _serve_file(f, res) {
+  fs.stat(f, function(err, stats) {
+    if (err || !stats.isFile()) {
+      res.statusCode = 404;
+      return res.end();
+    }
+    fs.createReadStream(f).pipe(res);
+  });
 }
 
 // Populate the caches with data
@@ -196,12 +218,39 @@ function populate_cache(body) {
   });
 
   function try_to_process(key) {
+    if (key === 'albums' && conf.cache.artwork) cache_album_art();
     if ((key === 'artists' || key === 'albums')
          && ++albums_by_artist >= 2) cache_x_by_y('albums', 'artist');
     if ((key === 'albums' || key === 'songs')
          && ++songs_by_album >= 2) cache_x_by_y('songs', 'album');
     if (songs_by_album >= 2 && albums_by_artist >=2)
       caches_ready(body);
+  }
+}
+
+// Grab all of the album art to cache locally
+function cache_album_art() {
+  var art_dir = path.join(cache_dir, 'media', 'art'),
+      queue = async.queue(q, 200);
+
+  Object.keys(cache.albums).forEach(function(album) {
+    var filename = path.join(art_dir, album) + '.jpg';
+    fs.exists(filename, function(e) {
+      if (!e) {
+        queue.push({'url': cache.albums[album].art, 'file': filename},
+          function() {});
+      }
+    });
+  });
+
+  function q(task, cb) {
+    var r = request(task.url),
+        s = fs.createWriteStream(task.file);
+    r.pipe(s, {'end': false});
+    r.on('end', function() {
+      s.end();
+      cb();
+    });
   }
 }
 
@@ -255,3 +304,8 @@ function weblog() {
   if (conf.web.log) console.log.apply(this, arguments);
 }
 
+function normalize_url(uri) {
+  var uri = url.parse(uri),
+      normalized_path = path.normalize(uri.pathname);
+  return normalized_path;
+}

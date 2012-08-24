@@ -4,6 +4,7 @@ var cache = {
       'songs': null,
       'songs_by_album': null,
       'albums_by_artist': null,
+      'conf': null,
       'themes': null
     },
     current_artist = null,
@@ -246,7 +247,7 @@ function populate_list($item, target, ids) {
 
     if (add_albums && old_album !== album) s += '<li data-id="null" class="nav-header">' + album + ' (' + cache.albums[a.album['@'].id].year + ')</li>';
     s += '<li data-id="' + id + '"><a href="#">';
-    if (target === 'albums') s += '<img src="' + fix_img_api(cache.songs[cache.songs_by_album[id][0]].art) + '" width="20" height="20" />';
+    if (target === 'albums') s += '<img src="' + get_artwork_url(id) + '" width="20" height="20" />';
     s += ((a.track && a.track != 0) ? a.track + '. ' : '') + title;
     s += '</a></li>';
     old_album = album;
@@ -309,8 +310,7 @@ function _play() {
     $nowplaying.song.text(song);
 
     // WTF API
-    var img_src = data.art || cache.songs[song_id].art;
-    img_src = fix_img_api(img_src);
+    var img_src = get_artwork_url(data.album['@'].id);
 
     $nowplaying.img.attr('src', img_src).removeClass('noborder');
 
@@ -367,10 +367,10 @@ function sort(ids, type) {
     else if (artist_name1 < artist_name2) return -1;
 
     // Album Year
-    a.year = (type === 'songs') ? cache.albums[cache.songs[a['@'].id].album['@'].id].year : a.year;
-    b.year = (type === 'songs') ? cache.albums[cache.songs[b['@'].id].album['@'].id].year : b.year;
-    if ((+a.year || 0) > (+b.year || 0)) return 1;
-    else if ((+a.year || 0) < (+b.year ||0)) return -1;
+    var year1 = (type === 'songs') ? cache.albums[cache.songs[a['@'].id].album['@'].id].year : a.year;
+    var year2 = (type === 'songs') ? cache.albums[cache.songs[b['@'].id].album['@'].id].year : b.year;
+    if ((+year1 || 0) > (+year2 || 0)) return 1;
+    else if ((+year1 || 0) < (+year2 ||0)) return -1;
 
     // Album name
     var album_name1 = ((type === 'albums') ? a.name : a.album['#']).toLowerCase().replace(article_re, '');
@@ -398,7 +398,12 @@ function set_theme(theme) {
   $themes.find('.current-theme').text(theme);
 }
 
-function fix_img_api(img_src) {
-  if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
+function get_artwork_url(id) {
+  if (cache.conf.cache.artwork) {
+    var img_src = '/cache/art/' + id + '.jpg';
+  } else {
+    var img_src = cache.albums[id].art;
+    if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
+  }
   return img_src;
 }
