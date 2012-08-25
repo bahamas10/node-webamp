@@ -53,6 +53,9 @@ After running `webamp --init` you can view the configuration file at `~/.webamp/
     "host": "localhost",
     "port": 8076
   }
+  "cache": {
+    "artwork": true
+  }
 }
 ```
 
@@ -62,7 +65,8 @@ Most of the options are self explanatory, but for those that aren't
 
 - `ampache.debug`: (Optional) Enable debug messages for [Ampache](https://github.com/bahamas10/node-ampache/) module
 - `ampache.ping`: (Optional) The time in milliseconds to between sending `ping` requests to Ampache (default: 10 minutes)
-- `web.log': (Optional) Log a line for every request to the local webserver
+- `web.log`: (Optional) Log a line for every request to the local webserver
+- `cache.artwork`: Cache album art locally (faster, but more bandwidth initially)
 
 API
 ---
@@ -89,9 +93,36 @@ Same as above, but force the info to come from Ampache and not the cache
 
 Return an object with an album or artist as the key, and a list of song or album ids (respectively)
 
-### /api/themes
+#### /api/themes
 
 An object representing the possible themes to use
+
+Known Issues
+------------
+
+All issues are tracked in github
+
+https://github.com/bahamas10/node-webamp/issues?state=open
+
+FAQ
+---
+
+#### Audio doesn't work on Ubuntu with chromium
+
+Webamp relies on HTML5 audio (for now), install the codecs with this
+
+   sudo apt-get install chromium-codecs-ffmpeg-extra
+
+#### I updated my Ampache catalog and now the cache is wrong, how can I clear it?
+
+To wipe all caches (including artwork) invoke webamp like this
+
+    webamp --clear
+
+#### I botched my config file pretty bad, how can I regenerate it?
+
+    webamp --init
+
 
 Credit
 ------
