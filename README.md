@@ -52,7 +52,7 @@ After running `webamp --init` you can view the configuration file at `~/.webamp/
     "log": true,
     "host": "localhost",
     "port": 8076
-  }
+  },
   "cache": {
     "artwork": true
   }
@@ -111,7 +111,7 @@ FAQ
 
 Webamp relies on HTML5 audio (for now), install the codecs with this
 
-   sudo apt-get install chromium-codecs-ffmpeg-extra
+    sudo apt-get install chromium-codecs-ffmpeg-extra
 
 #### I updated my Ampache catalog and now the cache is wrong, how can I clear it?
 
