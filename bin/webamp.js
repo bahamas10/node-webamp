@@ -23,6 +23,7 @@ var fs = require('fs'),
         'user': 'user',
         'pass': 'pass',
         'url': 'http://example.com:124/ampache/server/xml.server.php',
+        'ping': 10 * 60 * 1000,
         'debug': false
       },
       'web': {
