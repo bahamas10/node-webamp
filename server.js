@@ -55,7 +55,7 @@ module.exports = function(config) {
     setInterval(function() {
       console.log('Sending Keep Alive');
       conn.ping(function(err, body) {
-        if (body.session_expire) console.log('Sessions expires: %s', body.session_expire);
+        if (body && body.session_expire) console.log('Sessions expires: %s', body.session_expire);
         if (err || !body.session_expire) conn.authenticate(function(err, body) {
           if (err) throw err;
           console.log('Session Expired: Reauthentication successful');
