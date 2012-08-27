@@ -11,7 +11,7 @@ var cache = {
     playlist = [],
     playlist_pos = 0,
     options = {
-      'repeat': false,
+      'repeat': false
     },
     orig_title = '',
     orig_favicon = '',
@@ -399,10 +399,11 @@ function set_theme(theme) {
 }
 
 function get_artwork_url(id) {
+  var img_src;
   if (cache.conf.cache.artwork) {
-    var img_src = '/cache/art/' + id + '.jpg';
+    img_src = '/cache/art/' + id + '.jpg';
   } else {
-    var img_src = cache.albums[id].art;
+    img_src = cache.albums[id].art;
     if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
   }
   return img_src;

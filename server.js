@@ -305,7 +305,5 @@ function weblog() {
 }
 
 function normalize_url(uri) {
-  var uri = url.parse(uri),
-      normalized_path = path.normalize(uri.pathname);
-  return normalized_path;
+  return path.normalize(url.parse(uri).pathname);
 }
