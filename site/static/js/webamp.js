@@ -16,7 +16,8 @@ var cache = {
     orig_title = '',
     orig_favicon = '',
     article_re = /^the |^a /,
-    $data, $audio, $divs, $nowplaying, $favicon, $dropdown, $themes;
+    $data, $audio, $divs, $nowplaying, $favicon, $dropdown, $themes,
+    $header, $footer, $music_list;
 
 $(document).ready(function() {
   var i = 0;
@@ -30,9 +31,13 @@ $(document).ready(function() {
   });
 });
 
+$(window).resize(on_resize);
+
 function start() {
   $data = $('#data');
   $audio = $('audio');
+  $header = $('#header');
+  $footer = $('#footer');
   $divs = {
     'artists': null,
     'albums': null,
@@ -59,7 +64,8 @@ function start() {
 
     // Populate the column
     var s = '';
-    s += '<input class="input-' + key + '" placeholder="' + key + '" data-key="' + key + '" /><br />';
+    s += '<input class="input-' + key + '" placeholder="' + key + '" data-key="' + key + '" />';
+    s += '<span class="filter-clear" data-key="' + key + '"></span><br />';
     s += '<ul class="nav nav-list">';
     s += (key === 'artists')
        ? '<li data-id="all"><a href="#">All Artists</a></li>'
@@ -72,6 +78,13 @@ function start() {
     populate_list($divs[key], key, Object.keys(cache[key]));
   });
 
+  // Clear the filter
+  $('.filter-clear').live('click', function() {
+    var $this = $(this),
+        key = $this.attr('data-key');
+    $('.input-' + key).val('').trigger('keyup');
+    $this.text('');
+  });
 
   // Artist click
   $('#artists ul li a').live('click', function() {
@@ -222,9 +235,14 @@ function start() {
   $('input').keyup(function() {
     var $this = $(this),
         key = $this.attr('data-key'),
-        val = $this.val();
+        val = $this.val(),
+        $filter_clear = $('.filter-clear[data-key=' + key + ']');
 
-    if (val === '') return $divs[key].find('ul li a').show();
+    if (val === '') {
+      $filter_clear.text('');
+      return $divs[key].find('ul li a').show();
+    }
+    $filter_clear.text('x');
     $divs[key].find('ul li a').each(function() {
       var $this = $(this);
       if ($this.text().toLowerCase().indexOf(val) === -1) {
@@ -234,6 +252,9 @@ function start() {
       }
     });
   });
+
+  $music_list = $('.music-list');
+  on_resize();
 }
 
 function populate_list($item, target, ids) {
@@ -407,4 +428,9 @@ function get_artwork_url(id) {
     if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
   }
   return img_src;
+}
+
+function on_resize() {
+   var new_height = $('html').height() - $header.height() - $footer.height() - 45 + 'px';
+   $music_list.css('height', new_height);
 }

@@ -32,10 +32,6 @@ html, body {
 }
 
 #main {
-	position: absolute;
-	top: 100px;
-	bottom: 100px;
-	width: 90%;
 }
 #data {
 	position: relative;
@@ -44,6 +40,7 @@ html, body {
 .music-list {
 	position: relative;
 	height: 100%;
+	margin-top: 10px;
 }
 .music-list ul {
 	position: relative;
@@ -73,4 +70,9 @@ input {
 	border: none;
 	background: none;
 	border-left: 2px solid gray;
+}
+
+.filter-clear {
+	cursor: pointer;
+	float: right;
 }
