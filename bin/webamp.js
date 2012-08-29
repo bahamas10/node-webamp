@@ -13,7 +13,8 @@ var fs = require('fs'),
     path = require('path'),
     util = require('util'),
     server = require('../server'),
-    version = require('../package.json').version,
+    latest = require('latest'),
+    package = require('../package.json'),
     mkdirp = require('mkdirp'),
     args = process.argv.slice(2),
     webamp_dir = path.join(process.env['HOME'], '.webamp'),
@@ -50,10 +51,30 @@ function usage() {
     'Options (must be given as the first argument; all options are mutually exclusive)',
     '  --init    | -i: Create a config file at %s',
     '  --clear   | -c: Clear the cache located at ~/.webamp/cache',
+    '  --updates | -u: Check for available updates',
     '  --help    | -h: Print this help message and exit',
     '  --version | -v: Print the version number and exit',
     ''
   ].join('\n'), path.basename(process.argv[1]), config_file);
+}
+
+// Check for available updates async
+function check_updates(exit) {
+  latest(package.name, function(err, v) {
+    var ret = 0;
+    if (err) {
+      console.warn(">>> Couldn't determine latest version");
+      ret = 2;
+    } else if (v !== package.version) {
+      console.warn('>>> You are running version %s, a newer version %s is available', p.version, v);
+      console.warn('>>> Consider updating with: npm update -g %s', p.name);
+      ret = 1;
+    } else {
+      console.log('You are running the latest version %s', package.version);
+      ret = 0;
+    }
+    if (exit) process.exit(ret);
+  });
 }
 
 // Command line arguments
@@ -63,7 +84,7 @@ switch (args[0]) {
     process.exit(0);
     break;
   case '-v': case '--version':
-    console.log(version);
+    console.log(package.version);
     process.exit(0);
     break;
   case '-c': case '--clear':
@@ -72,6 +93,10 @@ switch (args[0]) {
       if (err) throw err;
       console.log('Caches cleared');
     });
+    return;
+    break;
+  case '-u': case '--updates':
+    check_updates(true);
     return;
     break;
   case '-i': case '--init':
@@ -100,6 +125,8 @@ try {
 try {
   mkdirp(path.join(webamp_dir, 'cache', 'media', 'art'), '0755');
 } catch (e) {}
+
+check_updates();
 
 // Everything should be good now, let's start the server
 server(conf);

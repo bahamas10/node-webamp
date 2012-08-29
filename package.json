@@ -19,7 +19,8 @@
     "rimraf": "~2.0.2",
     "mkdirp": "~0.3.3",
     "async": "~0.1.22",
-    "request": "~2.10.0"
+    "request": "~2.10.0",
+    "latest": "0.0.0"
   },
   "bin": {
     "webamp": "./bin/webamp.js"
