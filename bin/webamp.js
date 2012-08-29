@@ -66,8 +66,8 @@ function check_updates(exit) {
       console.warn(">>> Couldn't determine latest version");
       ret = 2;
     } else if (v !== package.version) {
-      console.warn('>>> You are running version %s, a newer version %s is available', p.version, v);
-      console.warn('>>> Consider updating with: npm update -g %s', p.name);
+      console.warn('>>> You are running version %s, a newer version %s is available', package.version, v);
+      console.warn('>>> Consider updating with: npm update -g %s', package.name);
       ret = 1;
     } else {
       console.log('You are running the latest version %s', package.version);
