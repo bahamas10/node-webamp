@@ -14,9 +14,9 @@ var cache = {
       'repeat': false
     },
     orig_title = '',
-    orig_favicon = '',
+    orig_favicon = '/testing.ico',
     article_re = /^the |^a /,
-    $data, $audio, $divs, $nowplaying, $favicon, $dropdown, $themes,
+    $data, $audio, $divs, $nowplaying, $dropdown, $themes,
     $header, $footer, $music_list;
 
 $(document).ready(function() {
@@ -49,10 +49,8 @@ function start() {
     'album': $('#nowplaying li.album'),
     'song': $('#nowplaying li.song')
   };
-  $favicon = $('.favicon');
   $dropdown = $('select');
   $themes = $('#themes');
-  orig_favicon = $favicon.attr('href');
   orig_title = document.title;
 
   $data.html('');
@@ -299,7 +297,7 @@ function _play() {
     $divs.songs.find('ul li a i').remove();
     $divs.songs.find('ul li').removeClass('active');
     document.title = orig_title;
-    $favicon.attr('href', orig_favicon);
+    favicon.change(orig_favicon);
     playlist = [];
     playlist_pos = 0;
     $audio[0].pause();
@@ -336,11 +334,8 @@ function _play() {
     $nowplaying.img.attr('src', img_src).removeClass('noborder');
 
     // Favicon magic
-    var $old_favicon = $('.favicon');
-    var $fav = $old_favicon.clone();
-    $old_favicon.remove();
-    $fav.attr('href', img_src);
-    $('body').append($fav);
+    favicon.change(img_src);
+    console.log('img_src = ' + img_src);
 
     document.title = artist + ' - ' + song;
 
