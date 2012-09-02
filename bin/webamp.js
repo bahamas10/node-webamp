@@ -112,7 +112,7 @@ try {
 }
 
 try {
-  mkdirp(path.join(webamp_dir, 'cache', 'media', 'art'), '0755');
+  mkdirp.sync(path.join(webamp_dir, 'cache', 'media', 'art'), '0755');
 } catch (e) {}
 
 check_updates();
