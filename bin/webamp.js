@@ -60,19 +60,8 @@ function usage() {
 
 // Check for available updates async
 function check_updates(exit) {
-  latest(package.name, function(err, v) {
-    var ret = 0;
-    if (err) {
-      console.warn(">>> Couldn't determine latest version");
-      ret = 2;
-    } else if (v !== package.version) {
-      console.warn('>>> You are running version %s, a newer version %s is available', package.version, v);
-      console.warn('>>> Consider updating with: npm update -g %s', package.name);
-      ret = 1;
-    } else {
-      console.log('You are running the latest version %s', package.version);
-      ret = 0;
-    }
+  latest.check_update(package, function(ret, msg) {
+    console.log(msg);
     if (exit) process.exit(ret);
   });
 }

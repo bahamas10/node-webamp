@@ -20,7 +20,7 @@
     "mkdirp": "~0.3.3",
     "async": "~0.1.22",
     "request": "~2.10.0",
-    "latest": "0.0.0"
+    "latest": "~ 0.0.1"
   },
   "bin": {
     "webamp": "./bin/webamp.js"
