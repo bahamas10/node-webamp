@@ -17,7 +17,7 @@ var cache = {
     orig_favicon = '/testing.ico',
     article_re = /^the |^a /,
     $data, $audio, $divs, $nowplaying, $dropdown, $themes,
-    $header, $footer, $music_list;
+    $header, $footer, $music_list, $controls;
 
 $(document).ready(function() {
   var i = 0;
@@ -48,6 +48,11 @@ function start() {
     'artist': $('#nowplaying li.artist'),
     'album': $('#nowplaying li.album'),
     'song': $('#nowplaying li.song')
+  };
+  $controls = {
+    'prev': $('#controls .prev'),
+    'play': $('#controls .play'),
+    'next': $('#controls .next')
   };
   $dropdown = $('select');
   $themes = $('#themes');
@@ -204,6 +209,11 @@ function start() {
   Mousetrap.bind('left', prev);
   Mousetrap.bind('right', next);
 
+  // Controls
+  $controls.prev.click(prev);
+  $controls.next.click(next);
+  $controls.play.click(toggle_play);
+
   // Themes
   Object.keys(cache.themes).forEach(function(theme) {
     if (theme !== 'img') $themes.find('ul').append('<li><a href="#">' + theme + '</a></li>');
@@ -300,6 +310,7 @@ function _play() {
     favicon.change(orig_favicon);
     playlist = [];
     playlist_pos = 0;
+    $controls.play.find('i').removeClass('icon-pause').addClass('icon-play');
     $audio[0].pause();
     return;
   }
@@ -320,9 +331,6 @@ function _play() {
 
   function cb(data) {
     console.log(data);
-    $audio.attr('src', data.url || cache.songs[song_id].url);
-
-    console.log(data.url || cache.songs[song_id].url);
 
     $nowplaying.artist.text(artist);
     $nowplaying.album.text(album);
@@ -339,6 +347,9 @@ function _play() {
 
     document.title = artist + ' - ' + song;
 
+    $controls.play.find('i').removeClass('icon-play').addClass('icon-pause');
+
+    $audio.attr('src', data.url || cache.songs[song_id].url);
     $audio[0].pause();
     $audio[0].play();
   }
@@ -346,8 +357,13 @@ function _play() {
 
 function toggle_play() {
   var audio = $audio[0];
-  if (audio.paused) audio.play();
-  else audio.pause();
+  if (audio.paused) {
+    audio.play();
+    $controls.play.find('i').removeClass('icon-play').addClass('icon-pause');
+  } else {
+    audio.pause();
+    $controls.play.find('i').removeClass('icon-pause').addClass('icon-play');
+  }
   console.log('Music is now ' + ((audio.paused) ? 'paused' : 'playing'));
 }
 
