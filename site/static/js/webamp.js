@@ -71,9 +71,9 @@ function start() {
     s += '<span class="filter-clear" data-key="' + key + '"></span><br />';
     s += '<ul class="nav nav-list">';
     s += (key === 'artists')
-       ? '<li data-id="all"><a href="#">All Artists</a></li>'
+       ? '<li data-id="all"><a href="#">All Artists (' + Object.keys(cache.artists).length + ')</a></li>'
        : (key === 'albums')
-       ? '<li data-id="all"><a href="#">All Albums</a></li>'
+       ? '<li data-id="all"><a href="#">All Albums (' + Object.keys(cache.albums).length + ')</a></li>'
        : '';
     s += '</ul>';
     $divs[key].append(s);
@@ -103,17 +103,12 @@ function start() {
     $this.parent().addClass('active');
 
     // Populate the albums
-    $divs.albums.find('ul').html('<li data-id="all"><a href="#">All Albums</a></li>');
+    $divs.albums.find('ul').html('<li data-id="all"><a href="#">All Albums (' +
+        ids.length + ')</a></li>');
     populate_list($divs.albums, 'albums', ids);
 
-    // Populate the songs
-    $divs.songs.find('ul').html('');
-    var r = [];
-    ids.forEach(function(album_id) {
-      r = r.concat(cache.songs_by_album[album_id]);
-    });
-    populate_list($divs.songs, 'songs', r);
-    highlight_current_song();
+    // Click the 'all albums' button
+    $divs.albums.find('ul li[data-id=all] a').trigger('click');
 
     return false;
   });
@@ -336,7 +331,6 @@ function _play() {
     $nowplaying.album.text(album);
     $nowplaying.song.text(song);
 
-    // WTF API
     var img_src = get_artwork_url(data.album['@'].id);
 
     $nowplaying.img.attr('src', img_src).removeClass('noborder');
@@ -436,6 +430,7 @@ function get_artwork_url(id) {
     img_src = '/cache/art/' + id + '.jpg';
   } else {
     img_src = cache.albums[id].art;
+    // WTF API
     if (img_src.match(/[^&]object_type/)) img_src = img_src.replace('object_type', '&object_type');
   }
   return img_src;
