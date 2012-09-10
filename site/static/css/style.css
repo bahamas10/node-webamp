@@ -76,3 +76,7 @@ input {
 	cursor: pointer;
 	float: right;
 }
+
+button:hover {
+	cursor: default;
+}

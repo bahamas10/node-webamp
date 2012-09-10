@@ -11,7 +11,7 @@ var cache = {
     playlist = [],
     playlist_pos = 0,
     options = {
-      'repeat': false
+      'repeat': 0
     },
     orig_title = '',
     orig_favicon = '/testing.ico',
@@ -52,7 +52,8 @@ function start() {
   $controls = {
     'prev': $('#controls .prev'),
     'play': $('#controls .play'),
-    'next': $('#controls .next')
+    'next': $('#controls .next'),
+    'repeat': $('#controls .repeat')
   };
   $dropdown = $('select');
   $themes = $('#themes');
@@ -208,6 +209,24 @@ function start() {
   $controls.prev.click(prev);
   $controls.next.click(next);
   $controls.play.click(toggle_play);
+  $controls.repeat.click(function() {
+    options.repeat = (options.repeat + 1) % 3;
+    var $this = $(this);
+    switch (options.repeat) {
+      case 0:
+        $this.removeClass('active');
+        $this.find('img').attr('src', '/static/img/whiterepeat.png');
+        break;
+      case 1:
+        $this.addClass('active');
+        $this.find('img').attr('src', '/static/img/whiterepeat.png');
+        break;
+      case 2:
+        $this.addClass('active');
+        $this.find('img').attr('src', '/static/img/whiterepeat1.png');
+        break;
+    }
+  });
 
   // Themes
   Object.keys(cache.themes).forEach(function(theme) {
@@ -282,12 +301,12 @@ function populate_list($item, target, ids) {
 }
 
 function next() {
-  playlist_pos++;
+  if (options.repeat !== 2) playlist_pos++;
   _play();
 }
 
 function prev() {
-  playlist_pos--;
+  if (options.repeat !== 2) playlist_pos--;
   _play();
 }
 
