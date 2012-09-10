@@ -7,6 +7,8 @@ Ampache web interface to make browsing, and playing your music a simple task
 
 Only tested on Chrome, uses HTML5 Audio, probably won't work on any other browser
 
+http://bahamas10.github.com/node-webamp/
+
 Installation
 ------------
 
@@ -19,7 +21,7 @@ Usage
 
 Create the necessary config file by running
 
-    ~$ webamp --init
+    webamp --init
 
 This will create a json file at `~/.webamp/config.json` that will be used
 to configure the local webserver settings, as well as store the ampache credentials.
