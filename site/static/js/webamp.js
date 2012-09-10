@@ -223,9 +223,11 @@ function start() {
     $.cookie('theme', val, { expires: 7 });
     set_theme(val);
   });
+  var theme_cookie = $.cookie('theme') || 'slate';
   $themes.find('ul li a').each(function() {
-    var val = $(this).text();
-    if (val === $.cookie('theme')) $(this).trigger('click');
+    var $this = $(this),
+        val = $this.text();
+    if (val === theme_cookie) $this.trigger('click');
   });
   $themes.find('ul').hide();
   $themes.hover(function() {
