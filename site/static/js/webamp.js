@@ -17,7 +17,7 @@ var cache = {
     orig_favicon = '/testing.ico',
     article_re = /^the |^a /,
     $data, $audio, $divs, $nowplaying, $dropdown, $themes,
-    $header, $footer, $music_list, $controls;
+    $header, $footer, $music_list, $controls, $active_div;
 
 $(document).ready(function() {
   var i = 0;
@@ -43,6 +43,7 @@ function start() {
     'albums': null,
     'songs': null
   };
+  $active_div = $divs.artists;
   $nowplaying = {
     'img': $('#nowplaying img.album-art'),
     'artist': $('#nowplaying li.artist'),
@@ -88,6 +89,11 @@ function start() {
         key = $this.attr('data-key');
     $('.input-' + key).val('').trigger('keyup');
     $this.text('');
+  });
+
+  // div click
+  $('#artists,#albums,#songs').on('click', function(e) {
+    if (e.originalEvent) $active_div = $(this);
   });
 
   // Artist click
@@ -194,11 +200,14 @@ function start() {
 
   // Keyboard shortcuts
   Mousetrap.bind(['j', 'down'], function() {
-    console.log('down');
+    var $active = find_active($active_div);
+    $active.next().find('a').trigger('click');
     return false;
   });
   Mousetrap.bind(['k', 'up'], function() {
-    console.log('up');
+    var $active = find_active($active_div);
+    console.log($active);
+    $active.prev().find('a').trigger('click');
     return false;
   });
   Mousetrap.bind('space', toggle_play);
@@ -384,6 +393,16 @@ function toggle_play() {
 
 function clear_active($div) {
   $div.find('ul li').removeClass('active');
+}
+
+function find_active($div) {
+  var ret = $();
+  $div.find('ul li').each(function() {
+    var $this = $(this);
+    if ($this.hasClass('active'))
+      ret = $this;
+  });
+  return ret;
 }
 
 function highlight_current_song(song_id) {
