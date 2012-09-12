@@ -70,6 +70,7 @@ input {
 	border: none;
 	background: none;
 	border-left: 2px solid gray;
+	width: 90%;
 }
 
 .filter-clear {
