@@ -43,7 +43,6 @@ function start() {
     'albums': null,
     'songs': null
   };
-  $active_div = $divs.artists;
   $nowplaying = {
     'img': $('#nowplaying img.album-art'),
     'artist': $('#nowplaying li.artist'),
@@ -82,6 +81,7 @@ function start() {
 
     populate_list($divs[key], key, Object.keys(cache[key]));
   });
+  $active_div = $divs.artists;
 
   // Clear the filter
   $('.filter-clear').live('click', function() {
@@ -206,7 +206,6 @@ function start() {
   });
   Mousetrap.bind(['k', 'up'], function() {
     var $active = find_active($active_div);
-    console.log($active);
     $active.prev().find('a').trigger('click');
     return false;
   });
