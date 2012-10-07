@@ -8,10 +8,10 @@ var http = require('http'),
     request = require('request'),
     async = require('async'),
     router = new require('routes').Router(),
-    theme_url = path.join('/static/third-party/bootswatch'),
+    theme_url = path.join('/static/third-party/bootstrap/css'),
     theme_names = fs.readdirSync(
       path.join(__dirname, 'site', theme_url)
-    ),
+    ).filter(function(d) { return d.indexOf('bootstrap') === -1; }),
     index_html = fs.readFileSync(
       path.join(__dirname, 'site', 'index.html')
     ),
@@ -135,7 +135,7 @@ function api(req, res, params) {
       if (type === 'themes') {
         data = {};
         theme_names.forEach(function(theme) {
-          data[theme] = path.join(theme_url, theme, 'bootstrap.min.css');
+          data[theme.split('.')[0]] = path.join(theme_url, theme);
         });
       } else if (type === 'conf') {
         data = {
