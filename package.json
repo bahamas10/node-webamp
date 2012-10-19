@@ -1,7 +1,7 @@
 {
   "name": "webamp",
   "description": "Ampache web interface",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "author": "Dave Eddy <dave@daveeddy.com> (http://www.daveeddy.com)",
   "contributors": [],
   "repository": {
