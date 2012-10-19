@@ -41,7 +41,7 @@ module.exports = function(config) {
 
   // Authenticate to Ampache
   conn.authenticate(function(err, body) {
-    if (err) {
+    if (err || body.error) {
       console.error('Failed to authenticate!');
       console.error('Username: %s', conf.ampache.user);
       console.error('URL: %s', conf.ampache.url);
