@@ -1,46 +1,44 @@
-// Includes and constants
-var http = require('http'),
-    fs = require('fs'),
-    path = require('path'),
-    open = require('open'),
-    util = require('util'),
-    request = require('request'),
-    async = require('async'),
-    router = new require('routes').Router(),
-    theme_url = path.join('/static/third-party/bootstrap/css'),
-    theme_names = fs.readdirSync(
-      path.join(__dirname, 'site', theme_url)
-    ).filter(function(d) { return d.indexOf('bootstrap') === -1; }),
-    AmpacheSession = require('ampache'),
-    conn,
-    conf,
-    cache_ready = false,
-    cache_dir = 'cache',
-    cache = {};
+var http = require('http');
+var fs = require('fs');
+var path = require('path');
+var util = require('util');
+
+var open = require('open');
+var request = require('request');
+var async = require('async');
+var router = new require('routes').Router();
+var AmpacheSession = require('ampache');
+
 var decorate = require('./decorate');
+
+var cache_ready = false;
+
+// populated when this module is called
+var conn, conf, o, cache_dir, cache = {};
 
 // make the routes
 var _static = require('./routes/static');
 router.addRoute('/', _static);
 router.addRoute('/static/*', _static);
 router.addRoute('/cache/*', require('./routes/cache'));
-router.addRoute('/api/:type?/:filter?/:new?', api);
+router.addRoute('/api/:type?/:filter?/:new?', require('./routes/api'));
 
 // Export the function to create the server
 module.exports = function(config) {
+  // set the global variables, these were set from ./bin/webamp.js
   conf = config;
-  cache_dir = path.join(conf.webamp_dir, cache_dir);
+  cache_dir = path.join(conf.webamp_dir, 'cache');
 
   // prepend timestamps to all logs
   require('log-timestamp')('[%s] %s', function() {
     return new Date().toJSON();
   });
 
-  // Create the Ampache Object
+  // create the Ampache Object
   conn = new AmpacheSession(conf.ampache.user, conf.ampache.pass,
       conf.ampache.url, {debug: conf.ampache.debug || false});
 
-  // Authenticate to Ampache
+  // authenticate to Ampache
   conn.authenticate(function(err, body) {
     if (err || body.error) {
       console.error('Failed to authenticate!');
@@ -67,7 +65,15 @@ module.exports = function(config) {
     }, +conf.ampache.ping || 10 * 60 * 1000);
   });
 
-  // Create the server
+  // used to pass to routes
+  o = {
+    conn: conn,
+    conf: conf,
+    cache_dir: cache_dir,
+    cache: cache
+  };
+
+  // create the server
   return http.createServer(on_request).listen(conf.web.port, conf.web.host, function() {
     console.log('Server running at http://%s:%d/', conf.web.host, conf.web.port);
   });
@@ -97,63 +103,7 @@ function on_request(req, res) {
   if (!route) return res.notfound();
 
   // Route it
-  return route.fn(req, res, route.params, cache_dir);
-}
-
-// API Route hit
-function api(req, res, params) {
-  var type = params.type,
-      filter = params.filter;
-
-  if (params.new === 'new') {
-    // User is requesting new information
-    var func = (type === 'artists') ? AmpacheSession.prototype.get_artist
-             : (type === 'albums')  ? AmpacheSession.prototype.get_album
-             : (type === 'songs')   ? AmpacheSession.prototype.get_song
-             : function() { res.end('[]'); };
-
-    func.call(conn, filter, function(err, body) {
-      if (err) throw err;
-      if (body && body.error) {
-        // Try once to reauth
-        console.warn(body.error);
-        console.warn('Session expired - reauthenticating');
-        conn.authenticate(function(err, body) {
-          if (err) throw err;
-          func.call(conn, filter, function(err, body) {
-            if (err) throw err;
-            res.end(JSON.stringify(body));
-          });
-        });
-      } else {
-        res.end(JSON.stringify(body));
-      }
-    });
-  } else {
-    // User wants it from the cache
-    var data;
-    if (!type) {
-      data = Object.keys(cache);
-    } else if (!cache[type]) {
-      data = [];
-      if (type === 'themes') {
-        data = {};
-        theme_names.forEach(function(theme) {
-          data[theme.split('.')[0]] = path.join(theme_url, theme);
-        });
-      } else if (type === 'conf') {
-        data = {
-          'cache': conf.cache
-        };
-      }
-    } else if (filter) {
-      data = cache[type][filter];
-    } else {
-      data = cache[type];
-    }
-
-    res.end(JSON.stringify(data));
-  }
+  return route.fn(req, res, route.params, o);
 }
 
 // Populate the caches with data
