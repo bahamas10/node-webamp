@@ -3,7 +3,6 @@ var http = require('http'),
     fs = require('fs'),
     path = require('path'),
     open = require('open'),
-    url = require('url'),
     util = require('util'),
     request = require('request'),
     async = require('async'),
@@ -12,9 +11,6 @@ var http = require('http'),
     theme_names = fs.readdirSync(
       path.join(__dirname, 'site', theme_url)
     ).filter(function(d) { return d.indexOf('bootstrap') === -1; }),
-    index_html = fs.readFileSync(
-      path.join(__dirname, 'site', 'index.html')
-    ),
     AmpacheSession = require('ampache'),
     conn,
     conf,
@@ -95,19 +91,13 @@ function on_request(req, res) {
   };
 
   // Extract the URL
-  route = router.match(req.url_parsed.pathname);
+  var route = router.match(req.url_parsed.pathname);
 
   // Route not found
   if (!route) return res.notfound();
 
   // Route it
   return route.fn(req, res, route.params, cache_dir);
-}
-
-// Index route hit
-function index(req, res, params) {
-  if (!cache_ready) return res.end('Cache\'s not ready');
-  res.end(index_html);
 }
 
 // API Route hit
