@@ -58,6 +58,7 @@ html, body {
 }
 
 audio {
+	width: 100%;
 }
 
 .noborder {
