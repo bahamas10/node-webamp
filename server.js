@@ -21,11 +21,13 @@ var http = require('http'),
     cache_ready = false,
     cache_dir = 'cache',
     cache = {};
+var decorate = require('./decorate');
 
 // make the routes
-router.addRoute('/', index);
-router.addRoute('/cache/*', cache_hit);
-router.addRoute('/static/*', static_hit);
+var _static = require('./routes/static');
+router.addRoute('/', _static);
+router.addRoute('/static/*', _static);
+router.addRoute('/cache/*', require('./routes/cache'));
 router.addRoute('/api/:type?/:filter?/:new?', api);
 
 // Export the function to create the server
@@ -33,7 +35,10 @@ module.exports = function(config) {
   conf = config;
   cache_dir = path.join(conf.webamp_dir, cache_dir);
 
-  require('log-timestamp');
+  // prepend timestamps to all logs
+  require('log-timestamp')('[%s] %s', function() {
+    return new Date().toJSON();
+  });
 
   // Create the Ampache Object
   conn = new AmpacheSession(conf.ampache.user, conf.ampache.pass,
@@ -44,6 +49,8 @@ module.exports = function(config) {
     if (err || body.error) {
       console.error('Failed to authenticate!');
       console.error('Username: %s', conf.ampache.user);
+      console.error('Password: %s',
+        new Array(conf.ampache.pass.length + 1).join('*'));
       console.error('URL: %s', conf.ampache.url);
       throw err;
     }
@@ -73,21 +80,28 @@ module.exports = function(config) {
 
 // Request received
 function on_request(req, res) {
-  // Log it
-  weblog('[%s] request received from %s for %s',
-      req.method, req.connection.remoteAddress, req.url);
+  decorate(req, res);
+
+  // log when a response is a set (to get code and everything)
+  var res_end = res.end;
+  res.end = function() {
+    var delta = new Date() - req.received_date;
+    weblog('%s %s %s %s (%dms)',
+        req.connection.remoteAddress, req.method,
+        res.statusCode, req.url, delta);
+
+    // Now call the original
+    res_end.apply(res, arguments);
+  };
 
   // Extract the URL
-  route = router.match(normalize_url(req.url));
+  route = router.match(req.url_parsed.pathname);
 
   // Route not found
-  if (!route) {
-    res.statusCode = 404;
-    return res.end();
-  }
+  if (!route) return res.notfound();
 
   // Route it
-  return route.fn(req, res, route.params);
+  return route.fn(req, res, route.params, cache_dir);
 }
 
 // Index route hit
@@ -150,29 +164,6 @@ function api(req, res, params) {
 
     res.end(JSON.stringify(data));
   }
-}
-
-/**
- * static assets
- */
-function cache_hit(req, res, params) {
-  var normalized_url = normalize_url(req.url).replace('/cache', '/media'),
-      filename = path.join(cache_dir, normalized_url);
-  _serve_file(filename, res);
-}
-function static_hit(req, res, params) {
-  var normalized_url = normalize_url(req.url);
-      filename = path.join(__dirname, 'site', normalized_url);
-  _serve_file(filename, res);
-}
-function _serve_file(f, res) {
-  fs.stat(f, function(err, stats) {
-    if (err || !stats.isFile()) {
-      res.statusCode = 404;
-      return res.end();
-    }
-    fs.createReadStream(f).pipe(res);
-  });
 }
 
 // Populate the caches with data
@@ -302,8 +293,4 @@ function cache_up_to_date(body) {
 
 function weblog() {
   if (conf.web.log) console.log.apply(this, arguments);
-}
-
-function normalize_url(uri) {
-  return path.normalize(url.parse(uri).pathname);
 }
