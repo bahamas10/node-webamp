@@ -6,27 +6,20 @@ var util = require('util');
 var open = require('open');
 var request = require('request');
 var async = require('async');
-var router = new require('routes').Router();
 var AmpacheSession = require('ampache');
 
 var decorate = require('./decorate');
+var router = require('./router');
 
 var cache_ready = false;
 
 // populated when this module is called
 var conn, conf, o, cache_dir, cache = {};
 
-// make the routes
-var _static = require('./routes/static');
-router.addRoute('/', _static);
-router.addRoute('/static/*', _static);
-router.addRoute('/cache/*', require('./routes/cache'));
-router.addRoute('/api/:type?/:filter?/:new?', require('./routes/api'));
-
 // Export the function to create the server
-module.exports = function(config) {
+module.exports = function(_conf) {
   // set the global variables, these were set from ./bin/webamp.js
-  conf = config;
+  conf = _conf;
   cache_dir = path.join(conf.webamp_dir, 'cache');
 
   // prepend timestamps to all logs
@@ -56,8 +49,14 @@ module.exports = function(config) {
     setInterval(function() {
       console.log('Sending Keep Alive');
       conn.ping(function(err, body) {
-        if (body && body.session_expire) console.log('Sessions expires: %s', body.session_expire);
-        if (err || !body.session_expire) conn.authenticate(function(err, body) {
+        // ping success
+        if (body && body.session_expire)
+          return console.log('Sessions expires: %s',
+            body.session_expire.toJSON());
+
+        // ping failed
+        if (err || !body.session_expire)
+          return conn.authenticate(function(err, body) {
           if (err) throw err;
           console.log('Session Expired: Reauthentication successful');
         });
@@ -110,16 +109,17 @@ function on_request(req, res) {
 function populate_cache(body) {
   console.log('Populating cache');
   var funcs = {
-        'artists': AmpacheSession.prototype.get_artists,
-        'albums': AmpacheSession.prototype.get_albums,
-        'songs': AmpacheSession.prototype.get_songs
-      },
-      to_get = {},
-      albums_by_artist = 0,
-      songs_by_album = 0;
+    artists: AmpacheSession.prototype.get_artists,
+    albums: AmpacheSession.prototype.get_albums,
+    songs: AmpacheSession.prototype.get_songs
+  };
+  var to_get = {};
+  var albums_by_artist = 0;
+  var songs_by_album = 0;
 
+  // if the cache is up to date, try to load in the cache
   if (cache_up_to_date(body)) {
-    ['artists', 'albums', 'songs'].forEach(function(key) {
+    Object.keys(funcs).forEach(function(key) {
       try {
         cache[key] = require(path.join(cache_dir, key + '.json'));
         console.log('Loaded %s from local cache', key);
@@ -133,13 +133,14 @@ function populate_cache(body) {
     to_get = funcs;
   }
 
-  // Loop the caches to build from remote source
+  // Loop the things that need to be cached
   Object.keys(to_get).forEach(function(key) {
     to_get[key].call(conn, function(err, body) {
       if (err) throw err;
       cache[key] = body;
-      // Save the cache
-      fs.writeFile(path.join(cache_dir, key + '.json'), JSON.stringify(body), function(err) {
+      // Save the cache, do it async... whatever
+      fs.writeFile(path.join(cache_dir, key + '.json'),
+        JSON.stringify(body), function(err) {
         if (err) return console.error(err);
       });
       console.log('Loaded %s from remote source', key);
@@ -161,8 +162,8 @@ function populate_cache(body) {
 
 // Grab all of the album art to cache locally
 function cache_album_art() {
-  var art_dir = path.join(cache_dir, 'media', 'art'),
-      queue = async.queue(q, 200);
+  var art_dir = path.join(cache_dir, 'media', 'art');
+  var queue = async.queue(q, 200);
 
   Object.keys(cache.albums).forEach(function(album) {
     var filename = path.join(art_dir, album) + '.jpg';
@@ -175,9 +176,10 @@ function cache_album_art() {
   });
 
   function q(task, cb) {
-    var r = request(task.url),
-        s = fs.createWriteStream(task.file);
-    r.pipe(s, {'end': false});
+    var r = request(task.url);
+    var s = fs.createWriteStream(task.file);
+
+    r.pipe(s, {end: false});
     r.on('end', function() {
       s.end();
       cb();
@@ -204,7 +206,9 @@ function caches_ready(body) {
   console.log('All caches ready');
 
   // Save the auth data for the update/add/clean times
-  fs.writeFile(path.join(cache_dir, 'update.json'), JSON.stringify(body), function(err) {
+  fs.writeFile(path.join(cache_dir, 'update.json'),
+      JSON.stringify(body), function(err) {
+
     if (err) return console.error(err);
   });
 
@@ -223,7 +227,8 @@ function cache_up_to_date(body) {
 
   ['add', 'update', 'clean'].forEach(function(key) {
     if (body[key].toJSON() !== old_body[key]) {
-      console.log('Cache not up-to-date - pulling from remote source (%s)', key);
+      console.log('Cache not up-to-date - pulling from remote source (%s)',
+        key);
       ok = false;
     }
   });
