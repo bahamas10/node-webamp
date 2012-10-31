@@ -86,13 +86,15 @@ function on_request(req, res) {
   // log when a response is a set (to get code and everything)
   var res_end = res.end;
   res.end = function() {
+    // call the original
+    res_end.apply(res, arguments);
+
+    // response done, now do the logging
     var delta = new Date() - req.received_date;
     weblog('%s %s %s %s (%dms)',
         req.connection.remoteAddress, req.method,
         res.statusCode, req.url, delta);
 
-    // Now call the original
-    res_end.apply(res, arguments);
   };
 
   // Extract the URL
