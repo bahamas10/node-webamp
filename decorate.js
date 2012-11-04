@@ -8,8 +8,6 @@ var url = require('url');
 module.exports = decorate;
 
 function decorate(req, res) {
-  req.received_date = new Date();
-
   req.url_parsed = url.parse(req.url, true);
   req.url_parsed.pathname = path.normalize(req.url_parsed.pathname);
 

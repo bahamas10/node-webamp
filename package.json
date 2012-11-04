@@ -16,6 +16,7 @@
     "open": "~ 0.0.2",
     "routes": "~ 0.1.0",
     "log-timestamp": "~ 0.0.1",
+    "access-log": "~ 0.1.0",
     "rimraf": "~2.0.2",
     "mkdirp": "~0.3.3",
     "async": "~0.1.22",

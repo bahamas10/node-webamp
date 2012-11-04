@@ -3,6 +3,7 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 
+var accesslog = require('access-log');
 var open = require('open');
 var request = require('request');
 var async = require('async');
@@ -82,20 +83,7 @@ module.exports = function(_conf) {
 // Request received
 function on_request(req, res) {
   decorate(req, res);
-
-  // log when a response is a set (to get code and everything)
-  var res_end = res.end;
-  res.end = function() {
-    // call the original
-    res_end.apply(res, arguments);
-
-    // response done, now do the logging
-    var delta = new Date() - req.received_date;
-    weblog('%s %s %s %s (%dms)',
-        req.connection.remoteAddress, req.method,
-        res.statusCode, req.url, delta);
-
-  };
+  accesslog(req, res, weblog);
 
   // Extract the URL
   var route = router.match(req.url_parsed.pathname);
