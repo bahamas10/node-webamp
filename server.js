@@ -1,13 +1,13 @@
-var http = require('http');
 var fs = require('fs');
+var http = require('http');
 var path = require('path');
 var util = require('util');
 
+var AmpacheSession = require('ampache');
 var accesslog = require('access-log');
+var async = require('async');
 var open = require('open');
 var request = require('request');
-var async = require('async');
-var AmpacheSession = require('ampache');
 
 var decorate = require('./decorate');
 var router = require('./router');
