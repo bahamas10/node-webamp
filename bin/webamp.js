@@ -28,7 +28,7 @@ var fs = require('fs'),
         'debug': false
       },
       'web': {
-        'log': false,
+        'log': true,
         'host': 'localhost',
         'port': 8076
       },
