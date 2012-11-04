@@ -27,14 +27,22 @@ This will create a json file at `~/.webamp/config.json` that will be used
 to configure the local webserver settings, as well as store the ampache credentials.
 Modify this file to reflect your setup, and then run `webamp` to start the service.
 
-    ~$ webamp
-    Server running at http://localhost:8076/
-    Successfully Authenticated!
-    Populating cache
-    Artists cache loaded
-    Albums cache loaded
-    Songs cache loaded
-    [Sat Aug 11 2012 00:15:52 GMT-0700 (PDT)] [GET] request received from 127.0.0.1 for /api/artists/7/new
+    $ webamp
+    [2012-11-04T02:33:50.165Z] Server running at http://localhost:8076/
+    [2012-11-04T02:33:50.193Z] You are running the latest version 0.0.22
+    [2012-11-04T02:33:50.336Z] Successfully Authenticated!
+    [2012-11-04T02:33:50.336Z] Populating cache
+    [2012-11-04T02:33:50.340Z] Loaded artists from local cache
+    [2012-11-04T02:33:50.362Z] Loaded albums from local cache
+    [2012-11-04T02:33:50.381Z] Calculating albums by artist
+    [2012-11-04T02:33:50.383Z] Finished albums by artist
+    [2012-11-04T02:33:50.615Z] Loaded songs from local cache
+    [2012-11-04T02:33:50.616Z] Calculating songs by album
+    [2012-11-04T02:33:50.625Z] Finished songs by album
+    [2012-11-04T02:33:50.625Z] All caches ready
+    [2012-11-04T02:33:51.084Z] 127.0.0.1 GET 200 /api/artists (15ms)
+    [2012-11-04T02:33:51.086Z] 127.0.0.1 GET 200 /api/conf (1ms)
+    [2012-11-04T02:33:51.088Z] 127.0.0.1 GET 200 /api/albums_by_artist (2ms)
 
 Configuration
 -------------
