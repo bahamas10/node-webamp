@@ -107,6 +107,10 @@ Return an object with an album or artist as the key, and a list of song or album
 
 An object representing the possible themes to use
 
+#### /api/conf
+
+An object representing non-private config variables
+
 Known Issues
 ------------
 

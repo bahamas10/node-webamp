@@ -1,22 +1,23 @@
 var cache = {
-      'artists': null,
-      'albums': null,
-      'songs': null,
-      'songs_by_album': null,
-      'albums_by_artist': null,
-      'conf': null,
-      'themes': null
-    },
-    current_artist = null,
-    playlist = [],
-    playlist_pos = 0,
-    options = {
-      'repeat': 0
-    },
-    orig_title = '',
-    orig_favicon = '/testing.ico',
-    article_re = /^the |^a /,
-    $data, $audio, $divs, $nowplaying, $dropdown, $themes,
+  artists: null,
+  albums: null,
+  songs: null,
+  songs_by_album: null,
+  albums_by_artist: null,
+  conf: null,
+  themes: null
+};
+var current_artist = null;
+var playlist = [];
+var playlist_pos = 0;
+var options = {
+  repeat: 0,
+  shuffle: false
+};
+var orig_title = document.title;
+var orig_favicon = '/testing.ico';
+var article_re = /^the |^a /;
+var $data, $audio, $divs, $nowplaying, $dropdown, $themes,
     $header, $footer, $music_list, $controls, $active_div;
 
 $(document).ready(function() {
@@ -39,25 +40,25 @@ function start() {
   $header = $('#header');
   $footer = $('#footer');
   $divs = {
-    'artists': null,
-    'albums': null,
-    'songs': null
+    artists: null,
+    albums: null,
+    songs: null
   };
   $nowplaying = {
-    'img': $('#nowplaying img.album-art'),
-    'artist': $('#nowplaying li.artist'),
-    'album': $('#nowplaying li.album'),
-    'song': $('#nowplaying li.song')
+    img: $('#nowplaying img.album-art'),
+    artist: $('#nowplaying li.artist'),
+    album: $('#nowplaying li.album'),
+    song: $('#nowplaying li.song')
   };
   $controls = {
-    'prev': $('#controls .prev'),
-    'play': $('#controls .play'),
-    'next': $('#controls .next'),
-    'repeat': $('#controls .repeat')
+    prev: $('#controls .prev'),
+    play: $('#controls .play'),
+    next: $('#controls .next'),
+    repeat: $('#controls .repeat'),
+    shuffle: $('#controls .shuffle')
   };
   $dropdown = $('select');
   $themes = $('#themes');
-  orig_title = document.title;
 
   $data.html('');
 
@@ -235,6 +236,15 @@ function start() {
         break;
     }
   });
+  $controls.shuffle.click(function() {
+    var $this = $(this);
+    options.shuffle = !options.shuffle;
+    if (options.shuffle) {
+      $this.addClass('active');
+    } else {
+      $this.removeClass('active');
+    }
+  });
 
   // Themes
   Object.keys(cache.themes).forEach(function(theme) {
@@ -309,7 +319,17 @@ function populate_list($item, target, ids) {
 }
 
 function next() {
-  if (options.repeat !== 2) playlist_pos++;
+  // repeat 1
+  if (options.repeat === 2) return _play();
+
+  if (options.shuffle) {
+    var pos = playlist_pos;
+    while (pos === playlist_pos)
+      pos = Math.floor(Math.random() * playlist.length)
+    playlist_pos = pos;
+  } else {
+    playlist_pos++;
+  }
   _play();
 }
 
