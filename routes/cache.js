@@ -6,5 +6,5 @@ module.exports = function(req, res, params, o) {
 
   var file_path = path.join(o.cache_dir,
       req.url_parsed.pathname.replace('/cache', '/media'));
-  req.pipe(filed(file_path)).pipe(res);
+  filed(file_path).pipe(res);
 };
