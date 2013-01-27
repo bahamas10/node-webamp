@@ -450,6 +450,7 @@ function sort(ids, type) {
 
     if (artist_name1 > artist_name2) return 1;
     else if (artist_name1 < artist_name2) return -1;
+    if (type === 'artists') return 0;
 
     // Album Year
     var year1 = (type === 'songs') ? cache.albums[cache.songs[a['@'].id].album['@'].id].year : a.year;
