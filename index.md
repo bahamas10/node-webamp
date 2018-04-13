@@ -43,7 +43,7 @@ Install
 
 First install [Node](http://nodejs.org), then install this program using [NPM](http://npmjs.org)
 
-    npm install -g webamp
+    npm install -g ampache-webamp
 
 Usage
 -----
